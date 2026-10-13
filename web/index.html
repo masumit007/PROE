@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8ff">
+  <meta name="description" content="PROE is an academic research platform for sharing papers, discovering ideas and exchanging constructive peer reviews.">
+  <title>PROE — Peer Review Orchestration Engine</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html" aria-label="PROE home">
+        <span class="brand-mark">P</span>
+        <span>PROE<span class="brand-dot">.</span></span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle"
+        aria-label="Open navigation" aria-expanded="false">☰</button>
+
+      <nav class="nav-links" id="navLinks">
+        <a class="active" href="index.html">Home</a>
+        <a href="papers.html">Explore Papers</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#featured">Research</a>
+        <a href="#about">About</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-button" id="themeToggle"
+          aria-label="Switch to dark mode" title="Toggle theme">◐</button>
+        <a class="login-link" href="login.html">Log in</a>
+        <a class="button button-small" href="register.html">
+          Get Started <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <span class="live-dot"></span>
+          THE ACADEMIC RESEARCH COMMUNITY
+        </div>
+
+        <h1>
+          Great research<br>
+          starts with<br>
+          <span class="gradient-text">great reviews.</span>
+        </h1>
+
+        <p class="hero-description">
+          Share your ideas, discover meaningful research, and improve your work
+          through constructive feedback from a community of learners and researchers.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button" href="submit-paper.html">
+            Submit Your Research <span>→</span>
+          </a>
+          <a class="button button-outline" href="papers.html">
+            Explore Papers <span>↗</span>
+          </a>
+        </div>
+
+        <div class="trust-row">
+          <div class="avatar-stack" aria-hidden="true">
+            <span>R</span><span>A</span><span>S</span><span>+</span>
+          </div>
+          <p>
+            <strong>Built for curious minds.</strong><br>
+            <span>Learn, contribute and grow together.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-art">
+        <div class="art-orbit orbit-one"></div>
+        <div class="art-orbit orbit-two"></div>
+
+        <div class="floating-note note-top">
+          <span class="note-icon green">✓</span>
+          <span><strong>Research shared</strong>
+            <small>Knowledge grows together</small></span>
+        </div>
+
+        <article class="paper-preview">
+          <div class="preview-top">
+            <span class="paper-symbol">▤</span>
+            <span class="status-pill"><i></i> Peer review</span>
+          </div>
+
+          <span class="category-label">ARTIFICIAL INTELLIGENCE</span>
+          <h2>Exploring the Future of Artificial Intelligence</h2>
+          <p class="preview-description">
+            Emerging AI technologies and their impact on modern computing systems.
+          </p>
+
+          <div class="preview-author">
+            <span class="author-avatar">AR</span>
+            <span><strong>Alex Researcher</strong>
+              <small>Research contributor</small></span>
+          </div>
+
+          <div class="preview-footer">
+            <span>♡ 24</span>
+            <span>▢ 08</span>
+            <span>◉ Demo</span>
+            <span class="bookmark">▮</span>
+          </div>
+        </article>
+
+        <div class="floating-note note-bottom">
+          <span class="note-icon purple">✦</span>
+          <span><strong>Better feedback</strong>
+            <small>Stronger ideas, together</small></span>
+        </div>
+
+        <span class="art-spark spark-one">✳</span>
+        <span class="art-spark spark-two">✦</span>
+      </div>
+    </section>
+
+    <section class="search-panel container" aria-label="Search sample papers">
+      <div class="search-main">
+        <label for="paperSearch">Find your next research idea</label>
+        <p>Search sample papers by title, topic or author.</p>
+
+        <form id="searchForm" class="search-form">
+          <span class="search-icon">⌕</span>
+          <input id="paperSearch" type="search"
+            placeholder="Try machine learning..." autocomplete="off">
+          <button class="button search-button" type="submit">Search →</button>
+        </form>
+      </div>
+
+      <div class="popular-topics">
+        <span class="topic-heading">POPULAR TOPICS</span>
+        <div class="topic-list">
+          <button class="topic-chip" data-topic="Artificial Intelligence">AI</button>
+          <button class="topic-chip" data-topic="Machine Learning">Machine Learning</button>
+          <button class="topic-chip" data-topic="Data Science">Data Science</button>
+          <button class="topic-chip" data-topic="Web Development">Web Development</button>
+          <button class="topic-chip" data-topic="Cybersecurity">Cybersecurity</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow-section section-pad" id="how-it-works">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">SIMPLE BY DESIGN</span>
+          <h2>Your research journey,<br>
+            <span class="gradient-text">made simpler.</span></h2>
+          <p>From your first submission to thoughtful feedback, every step has a purpose.</p>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="workflow-card">
+            <span class="step-number">01</span>
+            <div class="workflow-icon icon-blue">↥</div>
+            <h3>Share your research</h3>
+            <p>Submit your paper with a clear title, abstract and relevant keywords.</p>
+            <a href="submit-paper.html">Submit a paper →</a>
+          </article>
+
+          <article class="workflow-card">
+            <span class="step-number">02</span>
+            <div class="workflow-icon icon-purple">◎</div>
+            <h3>Exchange reviews</h3>
+            <p>Read other work and provide specific, constructive feedback.</p>
+            <a href="papers.html">Explore research →</a>
+          </article>
+
+          <article class="workflow-card">
+            <span class="step-number">03</span>
+            <div class="workflow-icon icon-orange">↗</div>
+            <h3>Learn and improve</h3>
+            <p>Review feedback on your papers and refine your ideas.</p>
+            <a href="register.html">Join the community →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="featured-section section-pad" id="featured">
+      <div class="container">
+        <div class="section-title-row">
+          <div>
+            <span class="eyebrow">IDEAS WORTH EXPLORING</span>
+            <h2>Discover research</h2>
+            <p>Explore sample papers across emerging fields.</p>
+          </div>
+          <a href="papers.html" class="text-link">View all papers →</a>
+        </div>
+
+        <div class="paper-grid" id="paperGrid">
+          <article class="research-card"
+            data-search="deep learning natural language processing machine learning priya sharma">
+            <div class="research-card-top">
+              <span class="tag tag-blue">Machine Learning</span>
+              <span class="card-bookmark">↗</span>
+            </div>
+            <h3>Deep Learning Approaches for Natural Language Processing</h3>
+            <p>A look at neural models and language understanding techniques.</p>
+            <div class="research-meta">
+              <span class="mini-avatar avatar-a">PS</span>
+              <span><strong>Priya Sharma</strong><small>Sample contributor</small></span>
+            </div>
+            <div class="card-bottom">
+              <span>Sample paper</span><a href="papers.html">Read more →</a>
+            </div>
+          </article>
+
+          <article class="research-card"
+            data-search="modern web architectures scalable applications web development rohan mehta">
+            <div class="research-card-top">
+              <span class="tag tag-purple">Web Development</span>
+              <span class="card-bookmark">↗</span>
+            </div>
+            <h3>Modern Web Architectures for Scalable Applications</h3>
+            <p>Exploring maintainable architecture and efficient web systems.</p>
+            <div class="research-meta">
+              <span class="mini-avatar avatar-b">RM</span>
+              <span><strong>Rohan Mehta</strong><small>Sample contributor</small></span>
+            </div>
+            <div class="card-bottom">
+              <span>Sample paper</span><a href="papers.html">Read more →</a>
+            </div>
+          </article>
+
+          <article class="research-card"
+            data-search="security challenges cloud computing cybersecurity amir khan">
+            <div class="research-card-top">
+              <span class="tag tag-green">Cybersecurity</span>
+              <span class="card-bookmark">↗</span>
+            </div>
+            <h3>Security Challenges in Cloud Computing</h3>
+            <p>Understanding threats, safeguards and secure cloud practices.</p>
+            <div class="research-meta">
+              <span class="mini-avatar avatar-c">AK</span>
+              <span><strong>Amir Khan</strong><small>Sample contributor</small></span>
+            </div>
+            <div class="card-bottom">
+              <span>Sample paper</span><a href="papers.html">Read more →</a>
+            </div>
+          </article>
+
+          <article class="research-card"
+            data-search="data visualization techniques insights data science sneha patel">
+            <div class="research-card-top">
+              <span class="tag tag-orange">Data Science</span>
+              <span class="card-bookmark">↗</span>
+            </div>
+            <h3>Data Visualization Techniques for Better Insights</h3>
+            <p>Presenting complex information through clear visual stories.</p>
+            <div class="research-meta">
+              <span class="mini-avatar avatar-d">SP</span>
+              <span><strong>Sneha Patel</strong><small>Sample contributor</small></span>
+            </div>
+            <div class="card-bottom">
+              <span>Sample paper</span><a href="papers.html">Read more →</a>
+            </div>
+          </article>
+        </div>
+
+        <p id="searchMessage" class="search-message" role="status" aria-live="polite"></p>
+        <p class="demo-note">Demonstration content only. Real papers will appear after backend integration.</p>
+      </div>
+    </section>
+
+    <section class="impact-section" id="about">
+      <div class="container impact-inner">
+        <div>
+          <span class="eyebrow">A COMMUNITY BUILT ON CURIOSITY</span>
+          <h2>Good research moves forward when ideas are shared.</h2>
+        </div>
+        <p>
+          PROE brings paper sharing and peer feedback into one academic workflow,
+          helping contributors learn from one another.
+        </p>
+      </div>
+    </section>
+
+    <section class="cta-section container">
+      <div class="cta-content">
+        <span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span>
+        <h2>Have an idea worth sharing?</h2>
+        <p>Bring your research to the community. Give feedback. Keep learning.</p>
+        <a href="register.html" class="button cta-button">
+          Get started with PROE →
+        </a>
+      </div>
+      <div class="cta-decoration" aria-hidden="true">P<span>.</span></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">P</span><span>PROE<span class="brand-dot">.</span></span>
+      </a>
+      <p>Peer Review Orchestration Engine · Academic project</p>
+      <div><a href="papers.html">Explore papers</a><a href="register.html">Join PROE</a></div>
+    </div>
+  </footer>
+</body>
+</html>
