@@ -1,190 +1,327 @@
 
 "use strict";
 
-// ==========================================
-// PROE - Main Frontend JavaScript
-// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-// Get common navigation and theme elements
-const menuToggle = document.getElementById("menuToggle");
-const navLinks = document.getElementById("navLinks");
-const themeToggle = document.getElementById("themeToggle");
+  // Current year
+  const year = $("#currentYear");
+  if (year) year.textContent = new Date().getFullYear();
 
-// ==========================================
-// 1. MOBILE NAVIGATION
-// ==========================================
+  // Mobile navigation
+  const menuToggle = $("#menuToggle");
+  const navLinks = $("#navLinks");
 
-if (menuToggle && navLinks) {
-  function closeMobileMenu() {
+  function closeMenu() {
+    if (!menuToggle || !navLinks) return;
     navLinks.classList.remove("open");
     menuToggle.setAttribute("aria-expanded", "false");
     menuToggle.setAttribute("aria-label", "Open navigation");
-    menuToggle.textContent = "☰";
+    document.body.classList.remove("menu-open");
   }
 
-  menuToggle.addEventListener("click", function () {
-    const isOpen = navLinks.classList.toggle("open");
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
 
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
-    menuToggle.setAttribute(
-      "aria-label",
-      isOpen ? "Close navigation" : "Open navigation"
-    );
-    menuToggle.textContent = isOpen ? "✕" : "☰";
-  });
+      if (isOpen) {
+        closeMenu();
+      } else {
+        navLinks.classList.add("open");
+        menuToggle.setAttribute("aria-expanded", "true");
+        menuToggle.setAttribute("aria-label", "Close navigation");
+        document.body.classList.add("menu-open");
+      }
+    });
 
-  // Close the menu after selecting a navigation link
-  navLinks.querySelectorAll("a").forEach(function (link) {
-    link.addEventListener("click", closeMobileMenu);
-  });
+    $$("a", navLinks).forEach(link => {
+      link.addEventListener("click", closeMenu);
+    });
 
-  // Close the menu when returning to a wider screen
-  window.addEventListener("resize", function () {
-    if (window.innerWidth > 760) {
-      closeMobileMenu();
-    }
-  });
-}
+    document.addEventListener("click", event => {
+      if (
+        menuToggle.getAttribute("aria-expanded") === "true" &&
+        !navLinks.contains(event.target) &&
+        !menuToggle.contains(event.target)
+      ) {
+        closeMenu();
+      }
+    });
 
-// ==========================================
-// 2. LIGHT AND DARK MODE
-// ==========================================
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeMenu();
+    });
 
-const THEME_KEY = "proe-theme";
-
-function updateThemeButton() {
-  if (!themeToggle) return;
-
-  const isDark = document.body.classList.contains("dark");
-
-  themeToggle.textContent = isDark ? "☀" : "◐";
-  themeToggle.setAttribute(
-    "aria-label",
-    isDark ? "Switch to light mode" : "Switch to dark mode"
-  );
-}
-
-// Restore the saved theme
-try {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 780) closeMenu();
+    });
   }
-} catch (error) {
-  console.warn("Could not restore the saved theme.");
-}
 
-updateThemeButton();
+  // Dark / light theme
+  const themeToggle = $("#themeToggle");
+  const themeMeta = $('meta[name="theme-color"]');
 
-if (themeToggle) {
-  themeToggle.addEventListener("click", function () {
-    const isDark = document.body.classList.toggle("dark");
-
+  function getSavedTheme() {
     try {
-      localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
-    } catch (error) {
-      console.warn("Could not save the selected theme.");
-    }
-
-    updateThemeButton();
-  });
-}
-
-// ==========================================
-// 3. HOMEPAGE RESEARCH SEARCH
-// ==========================================
-
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("paperSearch");
-const paperCards = Array.from(
-  document.querySelectorAll(".research-card")
-);
-const searchMessage = document.getElementById("searchMessage");
-
-function filterPapers(query) {
-  const normalizedQuery = query.trim().toLowerCase();
-  let visibleCount = 0;
-
-  paperCards.forEach(function (card) {
-    const searchableText = (
-      (card.dataset.search || "") + " " + card.textContent
-    ).toLowerCase();
-
-    const matches =
-      normalizedQuery === "" ||
-      searchableText.includes(normalizedQuery);
-
-    card.hidden = !matches;
-
-    if (matches) {
-      visibleCount++;
-    }
-  });
-
-  if (searchMessage) {
-    if (!normalizedQuery) {
-      searchMessage.textContent = "";
-    } else if (visibleCount === 0) {
-      searchMessage.textContent =
-        "No matching sample papers. Try a different topic.";
-    } else {
-      searchMessage.textContent =
-        visibleCount + " sample paper(s) found.";
+      return localStorage.getItem("proe-theme");
+    } catch (_) {
+      return null;
     }
   }
-}
 
-if (searchForm && searchInput) {
-  searchForm.addEventListener("submit", function (event) {
-    event.preventDefault();
+  function saveTheme(theme) {
+    try {
+      localStorage.setItem("proe-theme", theme);
+    } catch (_) {
+      // Theme still works for the current page if storage is unavailable.
+    }
+  }
 
-    filterPapers(searchInput.value);
+  function applyTheme(theme) {
+    const isLight = theme === "light";
+    document.body.classList.toggle("light-theme", isLight);
 
-    const featuredSection = document.getElementById("featured");
+    if (themeToggle) {
+      themeToggle.setAttribute(
+        "aria-label",
+        isLight ? "Switch to dark theme" : "Switch to light theme"
+      );
+      themeToggle.title = isLight ? "Switch to dark theme" : "Switch to light theme";
+    }
 
-    if (featuredSection) {
-      featuredSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+    if (themeMeta) {
+      themeMeta.content = isLight ? "#f4f6fc" : "#080d1b";
+    }
+  }
+
+  applyTheme(getSavedTheme() === "light" ? "light" : "dark");
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.body.classList.contains("light-theme")
+        ? "dark"
+        : "light";
+
+      applyTheme(nextTheme);
+      saveTheme(nextTheme);
+    });
+  }
+
+  // Hero slideshow
+  const gallery = $("#heroGallery");
+
+  if (gallery) {
+    const slides = $$(".gallery-slide", gallery);
+    const dots = $$(".gallery-dot", gallery);
+    const previous = $(".gallery-prev", gallery);
+    const next = $(".gallery-next", gallery);
+    const counter = $("#galleryCounter");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    let currentIndex = Math.max(
+      0,
+      slides.findIndex(slide => slide.classList.contains("is-active"))
+    );
+
+    let timer = null;
+
+    function showSlide(index) {
+      if (!slides.length) return;
+
+      currentIndex = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, i) => {
+        const active = i === currentIndex;
+        slide.classList.toggle("is-active", active);
+        slide.setAttribute("aria-hidden", String(!active));
+      });
+
+      dots.forEach((dot, i) => {
+        const active = i === currentIndex;
+        dot.classList.toggle("is-active", active);
+        dot.setAttribute("aria-pressed", String(active));
+      });
+
+      if (counter) {
+        counter.textContent =
+          `${String(currentIndex + 1).padStart(2, "0")} / ` +
+          `${String(slides.length).padStart(2, "0")}`;
+      }
+    }
+
+    function stopSlideshow() {
+      if (timer !== null) window.clearInterval(timer);
+      timer = null;
+    }
+
+    function startSlideshow() {
+      stopSlideshow();
+
+      if (slides.length < 2 || reducedMotion.matches || document.hidden) {
+        return;
+      }
+
+      timer = window.setInterval(() => {
+        showSlide(currentIndex + 1);
+      }, 5000);
+    }
+
+    function navigate(index) {
+      showSlide(index);
+      startSlideshow();
+    }
+
+    if (previous) {
+      previous.addEventListener("click", () => navigate(currentIndex - 1));
+    }
+
+    if (next) {
+      next.addEventListener("click", () => navigate(currentIndex + 1));
+    }
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener("click", () => navigate(index));
+    });
+
+    gallery.addEventListener("mouseenter", stopSlideshow);
+    gallery.addEventListener("mouseleave", startSlideshow);
+    gallery.addEventListener("focusin", stopSlideshow);
+
+    gallery.addEventListener("focusout", event => {
+      if (!gallery.contains(event.relatedTarget)) startSlideshow();
+    });
+
+    gallery.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        navigate(currentIndex - 1);
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        navigate(currentIndex + 1);
+      }
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopSlideshow();
+      else startSlideshow();
+    });
+
+    if (reducedMotion.addEventListener) {
+      reducedMotion.addEventListener("change", startSlideshow);
+    }
+
+    showSlide(currentIndex);
+    startSlideshow();
+  }
+
+  // Homepage research filtering
+  const searchForm = $("#searchForm");
+  const searchInput = $("#paperSearch");
+  const paperGrid = $("#paperGrid");
+  const searchMessage = $("#searchMessage");
+  const emptySearch = $("#emptySearch");
+  const topicButtons = $$(".topic-chip");
+
+  if (searchForm && searchInput && paperGrid) {
+    const cards = $$(".research-card", paperGrid);
+
+    const normalize = value =>
+      String(value || "").toLowerCase().trim().replace(/\s+/g, " ");
+
+    function filterCards(query) {
+      const terms = normalize(query).split(" ").filter(Boolean);
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const searchableText = normalize(
+          `${card.dataset.search || ""} ${card.dataset.category || ""} ${card.textContent}`
+        );
+
+        const matches = terms.every(term => searchableText.includes(term));
+        card.hidden = !matches;
+
+        if (matches) visibleCount++;
+      });
+
+      if (emptySearch) {
+        emptySearch.hidden = visibleCount !== 0;
+      }
+
+      if (searchMessage) {
+        searchMessage.textContent = terms.length
+          ? `${visibleCount} matching topic${visibleCount === 1 ? "" : "s"} found.`
+          : "";
+      }
+
+      return visibleCount;
+    }
+
+    function clearTopicSelection() {
+      topicButtons.forEach(button => {
+        button.classList.remove("active");
+        button.setAttribute("aria-pressed", "false");
       });
     }
-  });
 
-  // Clear the filter when the search box becomes empty
-  searchInput.addEventListener("input", function () {
-    if (!searchInput.value.trim()) {
-      filterPapers("");
-    }
-  });
-}
+    searchInput.addEventListener("input", () => {
+      clearTopicSelection();
+      filterCards(searchInput.value);
+    });
 
-// ==========================================
-// 4. POPULAR TOPIC SHORTCUTS
-// ==========================================
+    searchForm.addEventListener("submit", event => {
+      event.preventDefault();
+      filterCards(searchInput.value);
 
-document.querySelectorAll(".topic-chip").forEach(function (button) {
-  button.addEventListener("click", function () {
-    if (!searchInput) return;
-
-    searchInput.value =
-      button.dataset.topic || button.textContent.trim();
-
-    filterPapers(searchInput.value);
-
-    const featuredSection = document.getElementById("featured");
-
-    if (featuredSection) {
-      featuredSection.scrollIntoView({
-        behavior: "smooth",
+      $("#featured")?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
         block: "start"
       });
-    }
-  });
+    });
+
+    topicButtons.forEach(button => {
+      button.setAttribute("aria-pressed", "false");
+
+      button.addEventListener("click", () => {
+        const wasActive = button.classList.contains("active");
+        clearTopicSelection();
+
+        if (wasActive) {
+          searchInput.value = "";
+        } else {
+          searchInput.value = button.dataset.topic || button.textContent.trim();
+          button.classList.add("active");
+          button.setAttribute("aria-pressed", "true");
+        }
+
+        filterCards(searchInput.value);
+      });
+    });
+  }
+
+  // Back to top
+  const backToTop = $("#backToTop");
+
+  if (backToTop) {
+    const updateButton = () => {
+      backToTop.classList.toggle("is-visible", window.scrollY > 500);
+    };
+
+    window.addEventListener("scroll", updateButton, { passive: true });
+
+    backToTop.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth"
+      });
+    });
+
+    updateButton();
+  }
 });
-
-// ==========================================
-// 5. FRONTEND INITIALIZATION
-// ==========================================
-
-console.log("PROE frontend JavaScript loaded successfully.");

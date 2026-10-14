@@ -4,305 +4,1092 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f7f8ff">
-  <meta name="description" content="Log in to your PROE research workspace.">
-  <title>Log In | PROE</title>
+  <meta name="theme-color" content="#080d1b">
+  <meta name="description" content="Log in to PROE, your academic research community.">
+  <title>Log in | PROE Research Platform</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    .auth-page {
-      min-height: 85vh;
+    :root {
+      --bg: #080d1b;
+      --panel: #10192e;
+      --input: #0a1224;
+      --border: #2b3956;
+      --text: #f4f6ff;
+      --muted: #a0aec8;
+      --purple: #8c78ff;
+      --cyan: #70ddf6;
+      --green: #75e5b5;
+      --error: #ff9baa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      color-scheme: dark;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px;
       display: grid;
       place-items: center;
-      box-sizing: border-box;
-      padding: 36px 18px;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 10% 10%, rgba(112, 96, 255, .15), transparent 36%),
+        radial-gradient(ellipse at 90% 90%, rgba(52, 187, 220, .11), transparent 36%),
+        var(--bg);
+      font-family: "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .auth-card {
-      width: 100%;
-      max-width: 440px;
-      box-sizing: border-box;
-      padding: 32px;
-      border: 1px solid #e0e4f2;
-      border-radius: 22px;
-      background: var(--card, #fff);
-      box-shadow: 0 18px 60px #171d3510;
-    }
-
-    .auth-back {
-      color: #5148f5;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .auth-back:hover,
-    .auth-card a:hover {
-      text-decoration: underline;
-    }
-
-    .auth-card h1 {
-      margin: 24px 0 10px;
-      font-size: clamp(1.8rem, 5vw, 2.3rem);
-    }
-
-    .auth-card p {
-      line-height: 1.6;
-    }
-
-    .auth-card label {
-      display: block;
-      margin: 18px 0 7px;
-      font-weight: 600;
-    }
-
-    .auth-card input {
-      display: block;
-      width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      padding: 13px;
-      border: 1px solid #d8dced;
-      border-radius: 10px;
-      background: var(--card, #fff);
-      color: inherit;
+    button,
+    input {
       font: inherit;
     }
 
-    .auth-card input:focus-visible,
-    .show-password:focus-visible,
-    .submit-button:focus-visible {
-      outline: 3px solid #a39dff;
-      outline-offset: 3px;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .password-wrap {
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .login-layout {
+      width: min(1150px, 100%);
+      min-height: 690px;
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      overflow: hidden;
+      border: 1px solid rgba(157, 174, 216, .17);
+      border-radius: 28px;
+      background: rgba(16, 25, 46, .94);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, .32);
+    }
+
+    /* LOGIN FORM PANEL */
+
+    .login-panel {
+      min-width: 0;
+      padding: clamp(30px, 5vw, 62px);
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse at top left, rgba(133, 112, 255, .07), transparent 42%),
+        var(--panel);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      color: #bdc8df;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color .2s, transform .2s;
+    }
+
+    .back-link span {
+      color: var(--purple);
+      font-size: 23px;
+    }
+
+    .back-link:hover {
+      color: white;
+      transform: translateX(-3px);
+    }
+
+    .brand {
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-top: 43px;
+      font-family: "Manrope", sans-serif;
+      font-size: 18px;
+      font-weight: 800;
     }
 
-    .password-wrap input {
-      flex: 1;
+    .brand-mark {
+      font-size: 26px;
+      letter-spacing: -2px;
+    }
+
+    .brand-mark span {
+      color: var(--cyan);
+    }
+
+    .brand-caption {
+      margin-left: 9px;
+      padding-left: 12px;
+      border-left: 1px solid rgba(157, 174, 216, .23);
+      color: #7786a5;
+      font-family: "DM Sans", sans-serif;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(117, 229, 181, .5);
+    }
+
+    .heading {
+      margin-top: 36px;
+    }
+
+    .heading h1 {
+      margin: 18px 0 14px;
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(38px, 4.2vw, 54px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -2.5px;
+    }
+
+    .gradient-text {
+      color: transparent;
+      background: linear-gradient(100deg, #ad99ff, #76ddf4);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .heading p {
+      max-width: 390px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    /* FORM FIELDS */
+
+    .login-form {
+      display: grid;
+      gap: 22px;
+      margin-top: 32px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 10px;
+      color: #e8edfa;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .forgot-link {
+      margin-bottom: 10px;
+      color: #ad9dff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .forgot-link:hover,
+    .register-link:hover {
+      color: var(--cyan);
+    }
+
+    .input-wrap {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 15px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--input);
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 4px rgba(140, 120, 255, .12);
+    }
+
+    .field-icon {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 19px;
+      color: #8191b3;
+    }
+
+    .field-icon svg,
+    .eye-button svg,
+    .security-note svg {
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .input-wrap input {
+      width: 100%;
       min-width: 0;
+      height: 52px;
+      padding: 0;
+      border: 0;
+      outline: none;
+      color: var(--text);
+      background: transparent;
+      font-size: 14px;
+      box-shadow: none;
     }
 
-    .show-password {
-      flex-shrink: 0;
-      width: 48px;
-      height: 48px;
+    .input-wrap input:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .input-wrap input::placeholder {
+      color: #7183a3;
+      opacity: 1;
+    }
+
+    .eye-button {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
       display: grid;
       place-items: center;
-      padding: 0;
-      border: 1px solid #d8dced;
-      border-radius: 10px;
-      background: transparent;
-      color: #5148f5;
-      cursor: pointer;
-    }
-
-    .show-password:hover {
-      background: #f3f2ff;
-    }
-
-    .show-password svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    .auth-card .submit-button {
-      width: 100%;
-      margin-top: 24px;
-      padding: 14px;
+      padding: 8px;
       border: 0;
-      border-radius: 11px;
-      background: #5148f5;
-      color: white;
-      font: inherit;
-      font-weight: 700;
+      border-radius: 9px;
+      color: #95a5c5;
+      background: transparent;
       cursor: pointer;
     }
 
-    .auth-card .submit-button:hover {
-      background: #4036df;
+    .eye-button:hover {
+      color: #c0b4ff;
+      background: rgba(140, 120, 255, .12);
     }
 
-    .auth-card a {
-      color: #5148f5;
+    .eye-button svg {
+      width: 21px;
+      height: 21px;
     }
 
-    .auth-message {
-      margin-top: 14px;
-      overflow-wrap: anywhere;
+    .eye-closed {
+      display: none;
     }
 
-    .auth-message[data-type="error"] {
-      color: #b42318;
+    .eye-button.visible .eye-open {
+      display: none;
     }
 
-    .auth-message[data-type="success"] {
-      color: #16803d;
+    .eye-button.visible .eye-closed {
+      display: block;
+    }
+
+    .field-error {
+      display: block;
+      margin-top: 6px;
+      color: var(--error);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .field.has-error .input-wrap {
+      border-color: var(--error);
+    }
+
+    .remember {
+      width: fit-content;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #aebbd4;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .remember input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--purple);
+    }
+
+    /* BUTTON AND STATUS */
+
+    .submit-button {
+      min-height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 1px;
+      padding: 14px 18px;
+      border: 0;
+      border-radius: 13px;
+      color: white;
+      background: linear-gradient(105deg, #8068ff, #6b82ff);
+      box-shadow: 0 12px 28px rgba(110, 100, 255, .2);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, filter .2s;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+      box-shadow: 0 16px 32px rgba(110, 100, 255, .3);
+    }
+
+    .submit-button:disabled {
+      opacity: .75;
+      cursor: wait;
+      transform: none;
+    }
+
+    .button-arrow {
+      font-size: 18px;
+      transition: transform .2s;
+    }
+
+    .submit-button:hover .button-arrow {
+      transform: translateX(4px);
+    }
+
+    .spinner {
+      display: none;
+      width: 17px;
+      height: 17px;
+      border: 2px solid rgba(255, 255, 255, .4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .submit-button.loading .spinner {
+      display: block;
+    }
+
+    .submit-button.loading .button-arrow {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .message {
+      padding: 12px 14px;
+      border: 1px solid rgba(117, 229, 181, .25);
+      border-radius: 10px;
+      color: #a5f3cf;
+      background: rgba(45, 163, 117, .09);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .message.error {
+      border-color: rgba(255, 130, 151, .3);
+      color: #ffb1be;
+      background: rgba(255, 100, 130, .08);
+    }
+
+    .security-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0;
+      color: #8190ad;
+      font-size: 10px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .security-note svg {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+      color: var(--green);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-top: 28px;
+      color: #71809e;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: rgba(157, 174, 216, .15);
+    }
+
+    .register-text {
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .register-link {
+      color: #b3a3ff;
+      font-weight: 700;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 30px;
+      color: #657491;
+      font-size: 10px;
+    }
+
+    /* RIGHT SIDE */
+
+    .visual-panel {
+      position: relative;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      padding: clamp(28px, 4vw, 50px);
+      overflow: hidden;
+      border-left: 1px solid rgba(157, 174, 216, .12);
+      background:
+        radial-gradient(ellipse at 80% 15%, rgba(118, 105, 255, .22), transparent 38%),
+        radial-gradient(ellipse at 15% 85%, rgba(45, 186, 220, .13), transparent 38%),
+        linear-gradient(155deg, #111c34, #0b1427);
+    }
+
+    .visual-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .22;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(195, 208, 255, .5) .8px, transparent .8px);
+      background-size: 25px 25px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    .orb {
+      position: absolute;
+      width: 270px;
+      height: 270px;
+      border: 1px solid rgba(151, 137, 255, .14);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .orb-one {
+      top: -125px;
+      right: -105px;
+      box-shadow: 0 0 0 30px rgba(151, 137, 255, .025),
+                  0 0 0 60px rgba(151, 137, 255, .025);
+    }
+
+    .orb-two {
+      right: -155px;
+      bottom: -155px;
+      width: 330px;
+      height: 330px;
+      border-color: rgba(112, 221, 246, .12);
+    }
+
+    .visual-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .visual-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .visual-content h2 {
+      margin: 28px 0 18px;
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(30px, 3.3vw, 43px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -1.8px;
+    }
+
+    .visual-content h2 span {
+      color: transparent;
+      background: linear-gradient(100deg, #ad99ff, #76ddf4);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .visual-description {
+      max-width: 350px;
+      margin: 0;
+      color: #a0aec8;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .benefits {
+      display: grid;
+      gap: 22px;
+      margin-top: 42px;
+    }
+
+    .benefit {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .benefit-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(150, 136, 255, .2);
+      border-radius: 13px;
+      color: #b7a8ff;
+      background: rgba(134, 115, 255, .1);
+      font-size: 19px;
+    }
+
+    .benefit:nth-child(2) .benefit-icon {
+      border-color: rgba(112, 221, 246, .2);
+      color: var(--cyan);
+      background: rgba(112, 221, 246, .08);
+    }
+
+    .benefit:nth-child(3) .benefit-icon {
+      border-color: rgba(117, 229, 181, .2);
+      color: var(--green);
+      background: rgba(117, 229, 181, .08);
+    }
+
+    .benefit strong,
+    .benefit small {
+      display: block;
+    }
+
+    .benefit strong {
+      color: #edf1ff;
+      font-size: 12px;
+    }
+
+    .benefit small {
+      margin-top: 5px;
+      color: #8796b3;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .visual-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 52px;
+      color: #7d8ba8;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .visual-line {
+      width: 28px;
+      height: 2px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #ad99ff, #76ddf4);
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 850px) {
+      body {
+        padding: 20px;
+      }
+
+      .login-layout {
+        max-width: 570px;
+        min-height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .visual-panel {
+        display: none;
+      }
+
+      .login-panel {
+        min-height: 650px;
+        padding: clamp(28px, 7vw, 52px);
+      }
+
+      .footer {
+        margin-top: 30px;
+      }
     }
 
     @media (max-width: 480px) {
-      .auth-card {
-        padding: 24px 20px;
+      body {
+        padding: 12px;
+      }
+
+      .login-layout {
+        border-radius: 20px;
+      }
+
+      .login-panel {
+        min-height: 0;
+        padding: 25px 20px;
+      }
+
+      .brand {
+        margin-top: 30px;
+      }
+
+      .brand-caption {
+        font-size: 8px;
+        letter-spacing: 1px;
+      }
+
+      .heading {
+        margin-top: 29px;
+      }
+
+      .heading h1 {
+        font-size: 39px;
+        letter-spacing: -1.8px;
+      }
+
+      .login-form {
+        gap: 19px;
+        margin-top: 27px;
+      }
+
+      .input-wrap {
+        min-height: 52px;
+        padding: 0 12px;
+      }
+
+      .input-wrap input {
+        height: 50px;
+        font-size: 13px;
+      }
+
+      .footer {
+        font-size: 9px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <main class="auth-page">
-    <section class="auth-card" aria-labelledby="loginHeading">
+  <main class="login-layout">
 
-      <a class="auth-back" href="index.html">← Back to home</a>
+    <section class="login-panel" aria-labelledby="loginTitle">
+      <a class="back-link" href="index.html">
+        <span aria-hidden="true">←</span>
+        Back to home
+      </a>
 
-      <h1 id="loginHeading">Welcome back</h1>
-      <p>Log in to continue your research journey with PROE.</p>
+      <div class="brand">
+        <span class="brand-mark">P<span>.</span></span>
+        <span>PROE</span>
+        <span class="brand-caption">RESEARCH COMMUNITY</span>
+      </div>
 
-      <form id="loginForm">
-        <label for="email">Email address</label>
-
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          placeholder="you@example.com"
-          required
-        >
-
-        <label for="password">Password</label>
-
-        <div class="password-wrap">
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            minlength="8"
-            placeholder="Enter your password"
-            required
-          >
-
-          <button
-            class="show-password"
-            id="togglePassword"
-            type="button"
-            aria-label="Show password"
-            aria-controls="password"
-            aria-pressed="false"
-          >
-            <svg
-              id="eyeIcon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+      <header class="heading">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          WELCOME BACK
         </div>
 
-        <button
-          class="submit-button"
-          id="loginButton"
-          type="submit"
-        >
-          Log in
+        <h1 id="loginTitle">
+          Your next idea<br>
+          starts <span class="gradient-text">here.</span>
+        </h1>
+
+        <p>Log in to continue your research journey with PROE.</p>
+      </header>
+
+      <form class="login-form" id="loginForm" novalidate>
+        <div class="field" id="emailField">
+          <label for="email">Email address</label>
+
+          <div class="input-wrap">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <rect x="3.5" y="5.5" width="17" height="13" rx="3"/>
+                <path d="m5 7 7 5.5L19 7"/>
+              </svg>
+            </span>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              maxlength="254"
+              required
+              aria-describedby="emailError"
+            >
+          </div>
+
+          <small class="field-error" id="emailError"></small>
+        </div>
+
+        <div class="field" id="passwordField">
+          <div class="label-row">
+            <label for="password">Password</label>
+            <a class="forgot-link" href="#" id="forgotPassword">Forgot password?</a>
+          </div>
+
+          <div class="input-wrap">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <rect x="4.5" y="10" width="15" height="10" rx="2.5"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                <path d="M12 14v2"/>
+              </svg>
+            </span>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+              aria-describedby="passwordError"
+            >
+
+            <button
+              class="eye-button"
+              id="togglePassword"
+              type="button"
+              aria-label="Show password"
+              aria-pressed="false"
+            >
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.5 12s3.4-7 9.5-7 9.5 7 9.5 7-3.4 7-9.5 7-9.5-7-9.5-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 3 18 18"/>
+                <path d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.1 0 9.5 7 9.5 7a15 15 0 0 1-3.1 3.8"/>
+                <path d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.4 7 9.5 7a9.7 9.7 0 0 0 3.1-.5"/>
+              </svg>
+            </button>
+          </div>
+
+          <small class="field-error" id="passwordError"></small>
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" id="rememberMe" name="rememberMe">
+          <span>Remember me on this device</span>
+        </label>
+
+        <div class="message" id="loginMessage" role="status" aria-live="polite" hidden></div>
+
+        <button class="submit-button" id="loginSubmit" type="submit">
+          <span class="button-text">Log in to PROE</span>
+          <span class="button-arrow" aria-hidden="true">→</span>
+          <span class="spinner" aria-hidden="true"></span>
         </button>
 
-        <p
-          id="loginMessage"
-          class="auth-message"
-          role="status"
-          aria-live="polite"
-        ></p>
+        <p class="security-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6l7-3Z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          Secure sign-in for your research community.
+        </p>
       </form>
 
-      <p>
-        New to PROE?
-        <a href="register.html">Create an account</a>
+      <div class="divider">NEW TO PROE?</div>
+
+      <p class="register-text">
+        Don't have an account?
+        <a class="register-link" href="register.html">
+          Create your account ↗
+        </a>
       </p>
+
+      <footer class="footer">
+        <span>© <span id="year"></span> PROE</span>
+        <span>Research. Review. Advance.</span>
+      </footer>
     </section>
+
+    <aside class="visual-panel" aria-label="About PROE">
+      <div class="orb orb-one"></div>
+      <div class="orb orb-two"></div>
+
+      <div class="visual-content">
+        <div class="visual-label">
+          <span class="dot"></span>
+          THE PROE RESEARCH SPACE
+        </div>
+
+        <h2>
+          Great research<br>
+          grows through<br>
+          <span>connection.</span>
+        </h2>
+
+        <p class="visual-description">
+          Discover ideas, share your work, and build stronger research
+          through thoughtful academic collaboration.
+        </p>
+
+        <div class="benefits">
+          <div class="benefit">
+            <span class="benefit-icon">✦</span>
+            <div>
+              <strong>Discover new ideas</strong>
+              <small>Explore research across disciplines.</small>
+            </div>
+          </div>
+
+          <div class="benefit">
+            <span class="benefit-icon">↗</span>
+            <div>
+              <strong>Share your research</strong>
+              <small>Bring your work to the community.</small>
+            </div>
+          </div>
+
+          <div class="benefit">
+            <span class="benefit-icon">✓</span>
+            <div>
+              <strong>Improve together</strong>
+              <small>Make feedback part of progress.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="visual-footer">
+          <span class="visual-line"></span>
+          BUILT FOR CURIOUS MINDS
+        </div>
+      </div>
+    </aside>
+
   </main>
 
   <script>
-    const loginForm = document.getElementById("loginForm");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const togglePassword = document.getElementById("togglePassword");
-    const eyeIcon = document.getElementById("eyeIcon");
-    const loginMessage = document.getElementById("loginMessage");
+    "use strict";
 
-    function showMessage(message, type) {
-      loginMessage.textContent = message;
-      loginMessage.dataset.type = type;
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const toggle = document.getElementById("togglePassword");
+      const button = document.getElementById("loginSubmit");
+      const message = document.getElementById("loginMessage");
 
-    // Toggle password visibility using the eye icon.
-    togglePassword.addEventListener("click", () => {
-      const isHidden = passwordInput.type === "password";
+      document.getElementById("year").textContent = new Date().getFullYear();
 
-      passwordInput.type = isHidden ? "text" : "password";
+      // Password visibility toggle.
+      toggle.addEventListener("click", () => {
+        const show = password.type === "password";
 
-      togglePassword.setAttribute(
-        "aria-label",
-        isHidden ? "Hide password" : "Show password"
-      );
+        password.type = show ? "text" : "password";
+        toggle.classList.toggle("visible", show);
+        toggle.setAttribute("aria-pressed", String(show));
+        toggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      });
 
-      togglePassword.setAttribute(
-        "aria-pressed",
-        String(isHidden)
-      );
+      function setError(input, text) {
+        const field = input.closest(".field");
+        const error = document.getElementById(input.id + "Error");
 
-      eyeIcon.innerHTML = isHidden
-        ? `
-          <path d="M3 3l18 18"/>
-          <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
-          <path d="M9.9 5.2A11 11 0 0112 5c6.5 0 10 7 10 7a15 15 0 01-4 4.5"/>
-          <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"/>
-        `
-        : `
-          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-          <circle cx="12" cy="12" r="3"/>
-        `;
-    });
-
-    // Frontend form validation only.
-    loginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      if (!loginForm.checkValidity()) {
-        loginForm.reportValidity();
-        return;
+        field.classList.toggle("has-error", Boolean(text));
+        error.textContent = text;
+        input.setAttribute("aria-invalid", String(Boolean(text)));
       }
 
-      if (!emailInput.value.trim()) {
-        showMessage("Please enter your email address.", "error");
-        emailInput.focus();
-        return;
+      function showMessage(text, isError = false) {
+        message.textContent = text;
+        message.classList.toggle("error", isError);
+        message.hidden = false;
       }
 
-      showMessage(
-        "Your details passed frontend validation. Login is not connected yet.",
-        "error"
-      );
-    });
+      function validate() {
+        setError(email, "");
+        setError(password, "");
 
-    // Clear old messages when the user edits a field.
-    loginForm.addEventListener("input", () => {
-      loginMessage.textContent = "";
-      loginMessage.removeAttribute("data-type");
+        let valid = true;
+        const emailValue = email.value.trim();
+
+        if (!emailValue) {
+          setError(email, "Please enter your email address.");
+          valid = false;
+        } else if (
+          emailValue.length > 254 ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
+        ) {
+          setError(email, "Please enter a valid email address.");
+          valid = false;
+        }
+
+        if (!password.value) {
+          setError(password, "Please enter your password.");
+          valid = false;
+        }
+
+        return valid;
+      }
+
+      email.addEventListener("input", () => setError(email, ""));
+      password.addEventListener("input", () => setError(password, ""));
+
+      document.getElementById("forgotPassword").addEventListener("click", (event) => {
+        event.preventDefault();
+
+        if (!email.value.trim()) {
+          setError(email, "Enter your email address first.");
+          email.focus();
+          return;
+        }
+
+        showMessage(
+          "Password recovery is not connected yet. A backend password-reset endpoint is required.",
+          true
+        );
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        message.hidden = true;
+
+        if (!validate()) return;
+
+        /*
+          Configure the actual backend endpoint here after confirming
+          the API contract with your backend teammate.
+
+          Example:
+          const LOGIN_API = "http://localhost:8080/api/auth/login";
+
+          The JSON request below is an example only. Adjust it to
+          match the real backend request and response format.
+        */
+        const LOGIN_API = "";
+
+        if (!LOGIN_API) {
+          showMessage(
+            "The form is ready, but login authentication needs your backend API endpoint.",
+            true
+          );
+          return;
+        }
+
+        button.disabled = true;
+        button.classList.add("loading");
+        button.querySelector(".button-text").textContent = "Signing you in...";
+
+        try {
+          const response = await fetch(LOGIN_API, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              email: email.value.trim(),
+              password: password.value
+            })
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(
+              result.message || "Login failed. Check your details and try again."
+            );
+          }
+
+          showMessage(result.message || "Login successful.");
+
+          if (
+            typeof result.redirectUrl === "string" &&
+            result.redirectUrl.startsWith("/") &&
+            !result.redirectUrl.startsWith("//")
+          ) {
+            window.location.assign(result.redirectUrl);
+          }
+        } catch (error) {
+          showMessage(
+            error.message || "Unable to connect to the server. Please try again.",
+            true
+          );
+        } finally {
+          button.disabled = false;
+          button.classList.remove("loading");
+          button.querySelector(".button-text").textContent = "Log in to PROE";
+        }
+      });
     });
   </script>
 </body>
