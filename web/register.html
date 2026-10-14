@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | PROE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-page {
+      min-height: 85vh;
+      display: grid;
+      place-items: center;
+      padding: 32px 18px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 32px;
+      border: 1px solid #e0e4f2;
+      border-radius: 22px;
+      background: var(--card, #fff);
+      box-shadow: 0 18px 60px #171d3510;
+    }
+    .auth-card h1 { margin-bottom: 10px; }
+    .auth-card p { line-height: 1.6; }
+    .auth-card label {
+      display: block;
+      margin: 18px 0 7px;
+      font-weight: 600;
+    }
+    .auth-card input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      border: 1px solid #d8dced;
+      border-radius: 10px;
+      font: inherit;
+    }
+    .auth-card button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border: 0;
+      border-radius: 11px;
+      background: #5148f5;
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .auth-card a { color: #5148f5; }
+  </style>
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <a href="index.html">← Back to home</a>
+      <h1>Join PROE</h1>
+      <p>Create an account to share research and collaborate.</p>
+
+      <form id="registerForm">
+        <label for="name">Full name</label>
+        <input id="name" name="name" autocomplete="name" required>
+
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email"
+          autocomplete="email" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+          autocomplete="new-password" minlength="8" required>
+
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" name="confirmPassword"
+          type="password" autocomplete="new-password"
+          minlength="8" required>
+
+        <button type="submit">Create account</button>
+        <p id="registerMessage" role="status"></p>
+      </form>
+
+      <p>Already registered? <a href="login.html">Log in</a></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("registerForm");
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const password = document.getElementById("password").value;
+      const confirmation = document.getElementById("confirmPassword").value;
+      const message = document.getElementById("registerMessage");
+
+      if (password !== confirmation) {
+        message.textContent = "Passwords do not match.";
+        return;
+      }
+
+      message.textContent =
+        "The form is valid, but registration is not connected to the backend yet.";
+    });
+  </script>
+</body>
+</html>

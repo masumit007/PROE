@@ -1,0 +1,11 @@
+
+# Java / Maven build output
+activity-service/target/
+**/target/
+
+# macOS files
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
