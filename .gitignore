@@ -1,7 +1,26 @@
-
 # Java / Maven build output
 activity-service/target/
 **/target/
+
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Uploaded files - keep the directory placeholder
+node-activity-service/uploads/*
+!node-activity-service/uploads/.gitkeep
+
+# Generated logs
+*.log
+npm-debug.log*
 
 # macOS files
 .DS_Store
