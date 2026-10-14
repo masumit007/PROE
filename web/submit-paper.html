@@ -1,16 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Submit Research | PROE</title>
+
   <link rel="stylesheet" href="css/style.css">
+
   <style>
     .submit-page {
       max-width: 850px;
       margin: 0 auto;
       padding: 55px 20px;
     }
+
     .submit-card {
       padding: 30px;
       border: 1px solid #e0e4f2;
@@ -18,11 +22,13 @@
       background: var(--card, #fff);
       box-shadow: 0 16px 45px #171d3510;
     }
+
     .submit-card label {
       display: block;
       margin: 18px 0 8px;
       font-weight: 600;
     }
+
     .submit-card input,
     .submit-card textarea,
     .submit-card select {
@@ -33,10 +39,12 @@
       border-radius: 10px;
       font: inherit;
     }
+
     .submit-card textarea {
       min-height: 140px;
       resize: vertical;
     }
+
     .submit-card button {
       margin-top: 24px;
       padding: 14px 22px;
@@ -48,17 +56,30 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    .submit-card button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
     .submit-note {
       line-height: 1.6;
       color: #69738f;
     }
+
+    #formMessage {
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+    }
   </style>
 </head>
+
 <body>
   <main class="submit-page">
     <p><a href="index.html">← Back to home</a></p>
 
     <h1>Submit Your Research</h1>
+
     <p class="submit-note">
       Share your work with the PROE academic research community.
     </p>
@@ -66,40 +87,102 @@
     <section class="submit-card">
       <form id="paperForm">
         <label for="title">Paper title</label>
-        <input id="title" name="title" maxlength="200" required>
+        <input
+          id="title"
+          name="title"
+          maxlength="200"
+          required
+        >
 
         <label for="topic">Research topic</label>
         <select id="topic" name="topic" required>
           <option value="">Select a topic</option>
-          <option>Artificial Intelligence</option>
-          <option>Data Science</option>
-          <option>Cybersecurity</option>
-          <option>Web Development</option>
-          <option>Other</option>
+          <option value="Artificial Intelligence">Artificial Intelligence</option>
+          <option value="Data Science">Data Science</option>
+          <option value="Cybersecurity">Cybersecurity</option>
+          <option value="Web Development">Web Development</option>
+          <option value="Other">Other</option>
         </select>
 
         <label for="abstract">Abstract</label>
-        <textarea id="abstract" name="abstract"
-          minlength="30" maxlength="5000" required
-          placeholder="Describe your research, objectives and findings..."></textarea>
+        <textarea
+          id="abstract"
+          name="abstract"
+          minlength="30"
+          maxlength="5000"
+          required
+          placeholder="Describe your research, objectives and findings..."
+        ></textarea>
 
         <label for="paperUrl">Paper URL (optional)</label>
-        <input id="paperUrl" name="paperUrl" type="url"
-          placeholder="https://example.com/my-paper.pdf">
+        <input
+          id="paperUrl"
+          name="paperUrl"
+          type="url"
+          placeholder="https://example.com/my-paper.pdf"
+        >
 
-        <button type="submit">Submit Research</button>
+        <button type="submit" id="submitButton">
+          Submit Research
+        </button>
+
         <p id="formMessage" role="status" aria-live="polite"></p>
       </form>
     </section>
   </main>
 
   <script>
-    document.getElementById("paperForm").addEventListener("submit", event => {
+    const paperForm = document.getElementById("paperForm");
+    const formMessage = document.getElementById("formMessage");
+    const submitButton = document.getElementById("submitButton");
+
+    paperForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      document.getElementById("formMessage").textContent =
-        "Your form is valid. Backend integration is still required to save this paper.";
+      const formData = new FormData(paperForm);
 
+      const paper = {
+        title: formData.get("title").trim(),
+        topic: formData.get("topic"),
+        abstract: formData.get("abstract").trim(),
+        url: formData.get("paperUrl").trim()
+      };
+
+      formMessage.textContent = "Submitting paper...";
+      submitButton.disabled = true;
+
+      try {
+        const response = await fetch(
+          "http://localhost:8081/api/papers",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(paper)
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || `Request failed (${response.status})`
+          );
+        }
+
+        formMessage.textContent =
+          result.message || "Paper received successfully!";
+
+        paperForm.reset();
+      } catch (error) {
+        console.error("Paper submission error:", error);
+
+        formMessage.textContent =
+          "Could not submit the paper. Check that the backend is running and CORS is configured.";
+      } finally {
+        submitButton.disabled = false;
+      }
     });
   </script>
 </body>

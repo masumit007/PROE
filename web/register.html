@@ -1,44 +1,113 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8ff">
+  <meta name="description" content="Create your PROE research account.">
   <title>Create Account | PROE</title>
+
   <link rel="stylesheet" href="css/style.css">
+
   <style>
     .auth-page {
       min-height: 85vh;
       display: grid;
       place-items: center;
-      padding: 32px 18px;
+      box-sizing: border-box;
+      padding: 36px 18px;
     }
+
     .auth-card {
       width: 100%;
-      max-width: 440px;
+      max-width: 460px;
+      box-sizing: border-box;
       padding: 32px;
       border: 1px solid #e0e4f2;
       border-radius: 22px;
       background: var(--card, #fff);
       box-shadow: 0 18px 60px #171d3510;
     }
-    .auth-card h1 { margin-bottom: 10px; }
-    .auth-card p { line-height: 1.6; }
+
+    .auth-back {
+      color: #5148f5;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-card h1 {
+      margin: 24px 0 10px;
+      font-size: clamp(1.8rem, 5vw, 2.3rem);
+    }
+
+    .auth-card p {
+      line-height: 1.6;
+    }
+
     .auth-card label {
       display: block;
       margin: 18px 0 7px;
       font-weight: 600;
     }
+
     .auth-card input {
+      display: block;
       width: 100%;
+      min-width: 0;
       box-sizing: border-box;
       padding: 13px;
       border: 1px solid #d8dced;
       border-radius: 10px;
+      background: var(--card, #fff);
+      color: inherit;
       font: inherit;
     }
-    .auth-card button {
+
+    .auth-card input:focus-visible,
+    .show-password:focus-visible,
+    .submit-button:focus-visible {
+      outline: 3px solid #a39dff;
+      outline-offset: 3px;
+    }
+
+    .password-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .password-wrap input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .show-password {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid #d8dced;
+      border-radius: 10px;
+      background: transparent;
+      color: #5148f5;
+      cursor: pointer;
+    }
+
+    .show-password:hover {
+      background: #f3f2ff;
+    }
+
+    .show-password svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .auth-card .submit-button {
       width: 100%;
-      margin-top: 22px;
+      margin-top: 24px;
       padding: 14px;
       border: 0;
       border-radius: 11px;
@@ -48,58 +117,239 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .auth-card a { color: #5148f5; }
+
+    .auth-card .submit-button:hover {
+      background: #4036df;
+    }
+
+    .auth-card a {
+      color: #5148f5;
+    }
+
+    .auth-message {
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .auth-message[data-type="error"] {
+      color: #b42318;
+    }
+
+    .auth-message[data-type="success"] {
+      color: #16803d;
+    }
+
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 24px 20px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <main class="auth-page">
-    <section class="auth-card">
-      <a href="index.html">← Back to home</a>
-      <h1>Join PROE</h1>
+    <section class="auth-card" aria-labelledby="registerHeading">
+
+      <a class="auth-back" href="index.html">← Back to home</a>
+
+      <h1 id="registerHeading">Join PROE</h1>
       <p>Create an account to share research and collaborate.</p>
 
       <form id="registerForm">
         <label for="name">Full name</label>
-        <input id="name" name="name" autocomplete="name" required>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          placeholder="Enter your full name"
+          required
+          minlength="2"
+          maxlength="100"
+        >
 
         <label for="email">Email address</label>
-        <input id="email" name="email" type="email"
-          autocomplete="email" required>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="you@example.com"
+          required
+        >
 
         <label for="password">Password</label>
-        <input id="password" name="password" type="password"
-          autocomplete="new-password" minlength="8" required>
+        <div class="password-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Create a password"
+            minlength="8"
+            required
+          >
+
+          <button
+            class="show-password"
+            type="button"
+            data-password-target="password"
+            aria-label="Show password"
+            aria-pressed="false"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
 
         <label for="confirmPassword">Confirm password</label>
-        <input id="confirmPassword" name="confirmPassword"
-          type="password" autocomplete="new-password"
-          minlength="8" required>
+        <div class="password-wrap">
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Enter your password again"
+            minlength="8"
+            required
+          >
 
-        <button type="submit">Create account</button>
-        <p id="registerMessage" role="status"></p>
+          <button
+            class="show-password"
+            type="button"
+            data-password-target="confirmPassword"
+            aria-label="Show confirmation password"
+            aria-pressed="false"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="submit-button" type="submit">
+          Create account
+        </button>
+
+        <p
+          id="registerMessage"
+          class="auth-message"
+          role="status"
+          aria-live="polite"
+        ></p>
       </form>
 
-      <p>Already registered? <a href="login.html">Log in</a></p>
+      <p>
+        Already registered?
+        <a href="login.html">Log in</a>
+      </p>
     </section>
   </main>
 
   <script>
     const form = document.getElementById("registerForm");
+    const password = document.getElementById("password");
+    const confirmation = document.getElementById("confirmPassword");
+    const message = document.getElementById("registerMessage");
 
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.dataset.type = type;
+    }
+
+    // Show or hide either password independently.
+    document.querySelectorAll("[data-password-target]").forEach(button => {
+      button.addEventListener("click", () => {
+        const input = document.getElementById(
+          button.dataset.passwordTarget
+        );
+
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+
+        button.setAttribute(
+          "aria-label",
+          isHidden ? "Hide password" : "Show password"
+        );
+
+        button.setAttribute("aria-pressed", String(isHidden));
+
+        button.innerHTML = isHidden
+          ? `
+            <svg xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M3 3l18 18"/>
+              <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
+              <path d="M9.9 5.2A11 11 0 0112 5c6.5 0 10 7 10 7a15 15 0 01-4 4.5"/>
+              <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"/>
+            </svg>
+          `
+          : `
+            <svg xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          `;
+      });
+    });
+
+    // Validate the registration form on the frontend.
     form.addEventListener("submit", event => {
       event.preventDefault();
 
-      const password = document.getElementById("password").value;
-      const confirmation = document.getElementById("confirmPassword").value;
-      const message = document.getElementById("registerMessage");
-
-      if (password !== confirmation) {
-        message.textContent = "Passwords do not match.";
+      if (!form.checkValidity()) {
+        form.reportValidity();
         return;
       }
 
-      message.textContent =
-        "The form is valid, but registration is not connected to the backend yet.";
+      if (password.value !== confirmation.value) {
+        showMessage("Passwords do not match. Please try again.", "error");
+        confirmation.focus();
+        return;
+      }
+
+      showMessage(
+        "Your details passed frontend validation. Registration is not connected yet.",
+        "error"
+      );
+    });
+
+    form.addEventListener("input", () => {
+      message.textContent = "";
+      message.removeAttribute("data-type");
     });
   </script>
 </body>

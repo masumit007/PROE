@@ -1,44 +1,118 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8ff">
+  <meta name="description" content="Log in to your PROE research workspace.">
   <title>Log In | PROE</title>
+
   <link rel="stylesheet" href="css/style.css">
+
   <style>
     .auth-page {
       min-height: 85vh;
       display: grid;
       place-items: center;
-      padding: 32px 18px;
+      box-sizing: border-box;
+      padding: 36px 18px;
     }
+
     .auth-card {
       width: 100%;
       max-width: 440px;
+      box-sizing: border-box;
       padding: 32px;
       border: 1px solid #e0e4f2;
       border-radius: 22px;
       background: var(--card, #fff);
       box-shadow: 0 18px 60px #171d3510;
     }
-    .auth-card h1 { margin: 0 0 10px; }
-    .auth-card p { line-height: 1.6; }
+
+    .auth-back {
+      color: #5148f5;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-back:hover,
+    .auth-card a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-card h1 {
+      margin: 24px 0 10px;
+      font-size: clamp(1.8rem, 5vw, 2.3rem);
+    }
+
+    .auth-card p {
+      line-height: 1.6;
+    }
+
     .auth-card label {
       display: block;
       margin: 18px 0 7px;
       font-weight: 600;
     }
+
     .auth-card input {
+      display: block;
       width: 100%;
+      min-width: 0;
       box-sizing: border-box;
       padding: 13px;
       border: 1px solid #d8dced;
       border-radius: 10px;
+      background: var(--card, #fff);
+      color: inherit;
       font: inherit;
     }
-    .auth-card button {
+
+    .auth-card input:focus-visible,
+    .show-password:focus-visible,
+    .submit-button:focus-visible {
+      outline: 3px solid #a39dff;
+      outline-offset: 3px;
+    }
+
+    .password-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .password-wrap input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .show-password {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid #d8dced;
+      border-radius: 10px;
+      background: transparent;
+      color: #5148f5;
+      cursor: pointer;
+    }
+
+    .show-password:hover {
+      background: #f3f2ff;
+    }
+
+    .show-password svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .auth-card .submit-button {
       width: 100%;
-      margin-top: 22px;
+      margin-top: 24px;
       padding: 14px;
       border: 0;
       border-radius: 11px;
@@ -48,39 +122,187 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .auth-card a { color: #5148f5; }
-    .auth-message { margin-top: 12px; }
+
+    .auth-card .submit-button:hover {
+      background: #4036df;
+    }
+
+    .auth-card a {
+      color: #5148f5;
+    }
+
+    .auth-message {
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .auth-message[data-type="error"] {
+      color: #b42318;
+    }
+
+    .auth-message[data-type="success"] {
+      color: #16803d;
+    }
+
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 24px 20px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <main class="auth-page">
-    <section class="auth-card">
-      <a href="index.html">← Back to home</a>
-      <h1>Welcome back</h1>
+    <section class="auth-card" aria-labelledby="loginHeading">
+
+      <a class="auth-back" href="index.html">← Back to home</a>
+
+      <h1 id="loginHeading">Welcome back</h1>
       <p>Log in to continue your research journey with PROE.</p>
 
       <form id="loginForm">
         <label for="email">Email address</label>
-        <input id="email" name="email" type="email"
-          autocomplete="email" required>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="you@example.com"
+          required
+        >
 
         <label for="password">Password</label>
-        <input id="password" name="password" type="password"
-          autocomplete="current-password" required minlength="8">
 
-        <button type="submit">Log in</button>
-        <p id="loginMessage" class="auth-message" role="status"></p>
+        <div class="password-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            minlength="8"
+            placeholder="Enter your password"
+            required
+          >
+
+          <button
+            class="show-password"
+            id="togglePassword"
+            type="button"
+            aria-label="Show password"
+            aria-controls="password"
+            aria-pressed="false"
+          >
+            <svg
+              id="eyeIcon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+
+        <button
+          class="submit-button"
+          id="loginButton"
+          type="submit"
+        >
+          Log in
+        </button>
+
+        <p
+          id="loginMessage"
+          class="auth-message"
+          role="status"
+          aria-live="polite"
+        ></p>
       </form>
 
-      <p>New to PROE? <a href="register.html">Create an account</a></p>
+      <p>
+        New to PROE?
+        <a href="register.html">Create an account</a>
+      </p>
     </section>
   </main>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", event => {
+    const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    const eyeIcon = document.getElementById("eyeIcon");
+    const loginMessage = document.getElementById("loginMessage");
+
+    function showMessage(message, type) {
+      loginMessage.textContent = message;
+      loginMessage.dataset.type = type;
+    }
+
+    // Toggle password visibility using the eye icon.
+    togglePassword.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+
+      passwordInput.type = isHidden ? "text" : "password";
+
+      togglePassword.setAttribute(
+        "aria-label",
+        isHidden ? "Hide password" : "Show password"
+      );
+
+      togglePassword.setAttribute(
+        "aria-pressed",
+        String(isHidden)
+      );
+
+      eyeIcon.innerHTML = isHidden
+        ? `
+          <path d="M3 3l18 18"/>
+          <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
+          <path d="M9.9 5.2A11 11 0 0112 5c6.5 0 10 7 10 7a15 15 0 01-4 4.5"/>
+          <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"/>
+        `
+        : `
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+          <circle cx="12" cy="12" r="3"/>
+        `;
+    });
+
+    // Frontend form validation only.
+    loginForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      document.getElementById("loginMessage").textContent =
-        "The form is valid, but login is not connected to the backend yet.";
+
+      if (!loginForm.checkValidity()) {
+        loginForm.reportValidity();
+        return;
+      }
+
+      if (!emailInput.value.trim()) {
+        showMessage("Please enter your email address.", "error");
+        emailInput.focus();
+        return;
+      }
+
+      showMessage(
+        "Your details passed frontend validation. Login is not connected yet.",
+        "error"
+      );
+    });
+
+    // Clear old messages when the user edits a field.
+    loginForm.addEventListener("input", () => {
+      loginMessage.textContent = "";
+      loginMessage.removeAttribute("data-type");
     });
   </script>
 </body>
