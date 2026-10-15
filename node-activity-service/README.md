@@ -76,3 +76,4 @@ After Java successfully saves a paper/review, it may send a server-to-server POS
 - Connection refused: make sure local MongoDB is running, or use Atlas URI.
 - Atlas authentication/network error: verify DB user, password URL encoding, IP allowlist and database permissions.
 - Port busy: change `PORT` in `.env`.
+<!-- Testing Jenkins automatic builds -->
