@@ -1,37 +1,56 @@
 pipeline {
     agent any
-    options { timestamps() }
+
+    options {
+        timestamps()
+    }
+
     stages {
         stage('Checkout') {
-            steps { checkout scm }
-        }
-        stage('Node.js checks') {
             steps {
-                dir('activity-service') {
-                    sh 'node --version'
-                    sh 'npm --version'
+                checkout scm
+            }
+        }
+
+        stage('Node.js Environment') {
+            steps {
+                sh 'node --version'
+                sh 'npm --version'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('node-activity-service') {
                     sh 'npm ci'
+                }
+            }
+        }
+
+        stage('Syntax Check') {
+            steps {
+                dir('node-activity-service') {
                     sh 'npm run check'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir('node-activity-service') {
                     sh 'npm test'
                 }
             }
         }
-        stage('Java build (if Maven project exists)') {
-            steps {
-                script {
-                    if (fileExists('java-app/pom.xml')) {
-                        dir('java-app') {
-                            sh 'mvn -B -DskipTests package'
-                        }
-                    } else {
-                        echo 'java-app/pom.xml not present yet; skipping Java build.'
-                    }
-                }
-            }
-        }
     }
+
     post {
-        success { echo 'PROE checks completed successfully.' }
-        failure { echo 'Pipeline failed. Read the first failing stage in the console log.' }
+        success {
+            echo 'PROE Node.js activity service: all checks passed!'
+        }
+
+        failure {
+            echo 'Build failed. Check the Console Output for details.'
+        }
     }
 }
