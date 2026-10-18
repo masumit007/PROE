@@ -1,898 +1,1212 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080d1b">
-  <meta name="description" content="Create your PROE research community account.">
-  <title>Create Account | PROE Research Platform</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #080d1b;
-      --panel: #10192e;
-      --input: #0a1224;
-      --border: #2b3956;
-      --text: #f4f6ff;
-      --muted: #a0aec8;
-      --purple: #8c78ff;
-      --cyan: #70ddf6;
-      --green: #75e5b5;
-      --error: #ff9baa;
-    }
-
-    * { box-sizing: border-box; }
-
-    html { min-height: 100%; color-scheme: dark; }
-
-    body {
-      min-height: 100vh;
-      margin: 0;
-      padding: 32px;
-      display: grid;
-      place-items: center;
-      color: var(--text);
-      background:
-        radial-gradient(ellipse at 10% 10%, rgba(112,96,255,.15), transparent 36%),
-        radial-gradient(ellipse at 90% 90%, rgba(52,187,220,.11), transparent 36%),
-        var(--bg);
-      font-family: "DM Sans", sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    button, input { font: inherit; }
-    a { color: inherit; text-decoration: none; }
-
-    button:focus-visible, a:focus-visible, input:focus-visible {
-      outline: 2px solid var(--cyan);
-      outline-offset: 4px;
-    }
-
-    .layout {
-      width: min(1150px, 100%);
-      min-height: 700px;
-      display: grid;
-      grid-template-columns: 1.08fr .92fr;
-      overflow: hidden;
-      border: 1px solid rgba(157,174,216,.17);
-      border-radius: 28px;
-      background: rgba(16,25,46,.94);
-      box-shadow: 0 30px 100px rgba(0,0,0,.32);
-    }
-
-    .form-panel {
-      min-width: 0;
-      padding: clamp(28px,5vw,58px);
-      display: flex;
-      flex-direction: column;
-      background:
-        radial-gradient(ellipse at top left, rgba(133,112,255,.07), transparent 42%),
-        var(--panel);
-    }
-
-    .back {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      color: #bdc8df;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color .2s, transform .2s;
-    }
-
-    .back span {
-      color: var(--purple);
-      font-size: 23px;
-    }
-
-    .back:hover { color: white; transform: translateX(-3px); }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 34px;
-      font-family: "Manrope", sans-serif;
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .brand-mark { font-size: 26px; letter-spacing: -2px; }
-    .brand-mark span { color: var(--cyan); }
-
-    .brand-caption {
-      margin-left: 9px;
-      padding-left: 12px;
-      border-left: 1px solid rgba(157,174,216,.23);
-      color: #7786a5;
-      font-family: "DM Sans", sans-serif;
-      font-size: 9px;
-      letter-spacing: 1.5px;
-    }
-
-    .eyebrow, .side-label {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      color: var(--cyan);
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 2px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      flex: 0 0 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 14px rgba(117,229,181,.5);
-    }
-
-    .heading { margin-top: 28px; }
-
-    .heading h1 {
-      margin: 17px 0 12px;
-      font-family: "Manrope", sans-serif;
-      font-size: clamp(36px,4vw,51px);
-      font-weight: 800;
-      line-height: 1.12;
-      letter-spacing: -2.3px;
-    }
-
-    .gradient {
-      color: transparent;
-      background: linear-gradient(100deg,#ad99ff,#76ddf4);
-      background-clip: text;
-      -webkit-background-clip: text;
-    }
-
-    .heading p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
-    .form {
-      display: grid;
-      gap: 19px;
-      margin-top: 28px;
-    }
-
-    .field { min-width: 0; }
-
-    .field label {
-      display: block;
-      margin-bottom: 9px;
-      color: #e8edfa;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .required { color: #ff9baa; }
-
-    .input-wrap {
-      min-height: 51px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 0 13px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--input);
-      transition: border-color .2s, box-shadow .2s;
-    }
-
-    .input-wrap:focus-within {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 4px rgba(140,120,255,.12);
-    }
-
-    .field-icon {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
-      color: #8191b3;
-    }
-
-    .field-icon svg, .eye svg, .security svg {
-      width: 100%;
-      height: 100%;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.7;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .input-wrap input {
-      width: 100%;
-      min-width: 0;
-      height: 49px;
-      padding: 0;
-      border: 0;
-      outline: 0;
-      color: var(--text);
-      background: transparent;
-      font-size: 13px;
-      box-shadow: none;
-    }
-
-    .input-wrap input:focus { outline: 0; box-shadow: none; }
-    .input-wrap input::placeholder { color: #7183a3; opacity: 1; }
-
-    .eye {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      display: grid;
-      place-items: center;
-      padding: 7px;
-      border: 0;
-      border-radius: 8px;
-      color: #95a5c5;
-      background: transparent;
-      cursor: pointer;
-    }
-
-    .eye:hover { color: #c0b4ff; background: rgba(140,120,255,.12); }
-    .eye svg { width: 21px; height: 21px; }
-    .eye .closed { display: none; }
-    .eye.visible .open { display: none; }
-    .eye.visible .closed { display: block; }
-
-    .error {
-      display: block;
-      margin-top: 5px;
-      color: var(--error);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .field.invalid .input-wrap { border-color: var(--error); }
-
-    .hint {
-      margin: 7px 0 0;
-      color: #8190ad;
-      font-size: 10px;
-      line-height: 1.6;
-    }
-
-    .strength {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
-    }
-
-    .strength span {
-      height: 4px;
-      flex: 1;
-      border-radius: 8px;
-      background: #2a3650;
-      transition: background .2s;
-    }
-
-    .strength-label {
-      display: block;
-      margin-top: 6px;
-      color: #8190ad;
-      font-size: 10px;
-    }
-
-    .terms {
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-      color: #aebbd4;
-      font-size: 11px;
-      line-height: 1.7;
-      cursor: pointer;
-    }
-
-    .terms input {
-      width: 16px;
-      height: 16px;
-      flex: 0 0 16px;
-      margin-top: 2px;
-      accent-color: var(--purple);
-    }
-
-    .terms a { color: #b3a3ff; font-weight: 600; }
-
-    .submit {
-      min-height: 53px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 13px 18px;
-      border: 0;
-      border-radius: 12px;
-      color: white;
-      background: linear-gradient(105deg,#8068ff,#6b82ff);
-      box-shadow: 0 12px 28px rgba(110,100,255,.2);
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform .2s, box-shadow .2s;
-    }
-
-    .submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 32px rgba(110,100,255,.3);
-    }
-
-    .submit:disabled { opacity: .7; cursor: wait; transform: none; }
-
-    .message {
-      padding: 11px 13px;
-      border: 1px solid rgba(117,229,181,.25);
-      border-radius: 10px;
-      color: #a5f3cf;
-      background: rgba(45,163,117,.09);
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .message.error-message {
-      border-color: rgba(255,130,151,.3);
-      color: #ffb1be;
-      background: rgba(255,100,130,.08);
-    }
-
-    .security {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      margin: 0;
-      color: #8190ad;
-      font-size: 10px;
-      line-height: 1.7;
-      text-align: center;
-    }
-
-    .security svg { width: 15px; height: 15px; flex: 0 0 15px; color: var(--green); }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 23px;
-      color: #71809e;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 1.4px;
-    }
-
-    .divider::before, .divider::after {
-      content: "";
-      height: 1px;
-      flex: 1;
-      background: rgba(157,174,216,.15);
-    }
-
-    .sign-in {
-      margin: 15px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    .sign-in a { color: #b3a3ff; font-weight: 700; }
-    .sign-in a:hover { color: var(--cyan); }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: auto;
-      padding-top: 26px;
-      color: #657491;
-      font-size: 10px;
-    }
-
-    /* Decorative information panel */
-
-    .visual {
-      position: relative;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      padding: clamp(28px,4vw,48px);
-      overflow: hidden;
-      border-left: 1px solid rgba(157,174,216,.12);
-      background:
-        radial-gradient(ellipse at 80% 15%,rgba(118,105,255,.22),transparent 38%),
-        radial-gradient(ellipse at 15% 85%,rgba(45,186,220,.13),transparent 38%),
-        linear-gradient(155deg,#111c34,#0b1427);
-    }
-
-    .visual::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      opacity: .2;
-      pointer-events: none;
-      background-image: radial-gradient(rgba(195,208,255,.5) .8px,transparent .8px);
-      background-size: 25px 25px;
-    }
-
-    .orb {
-      position: absolute;
-      width: 260px;
-      height: 260px;
-      border: 1px solid rgba(151,137,255,.14);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .orb-one { top: -120px; right: -100px; }
-    .orb-two { right: -160px; bottom: -150px; width: 320px; height: 320px; border-color: rgba(112,221,246,.12); }
-
-    .visual-content { position: relative; z-index: 1; width: 100%; }
-
-    .side-label {
-      font-size: 9px;
-      letter-spacing: 1.5px;
-    }
-
-    .visual h2 {
-      margin: 28px 0 17px;
-      font-family: "Manrope", sans-serif;
-      font-size: clamp(30px,3.2vw,42px);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -1.7px;
-    }
-
-    .visual p {
-      max-width: 350px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.9;
-    }
-
-    .benefits { display: grid; gap: 22px; margin-top: 39px; }
-
-    .benefit { display: flex; align-items: center; gap: 13px; }
-
-    .benefit-icon {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(150,136,255,.2);
-      border-radius: 13px;
-      color: #b7a8ff;
-      background: rgba(134,115,255,.1);
-      font-size: 18px;
-    }
-
-    .benefit:nth-child(2) .benefit-icon {
-      color: var(--cyan);
-      background: rgba(112,221,246,.08);
-      border-color: rgba(112,221,246,.2);
-    }
-
-    .benefit:nth-child(3) .benefit-icon {
-      color: var(--green);
-      background: rgba(117,229,181,.08);
-      border-color: rgba(117,229,181,.2);
-    }
-
-    .benefit strong, .benefit small { display: block; }
-    .benefit strong { color: #edf1ff; font-size: 12px; }
-    .benefit small { margin-top: 5px; color: #8796b3; font-size: 11px; line-height: 1.6; }
-
-    .visual-footer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 48px;
-      color: #7d8ba8;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 1.4px;
-    }
-
-    .visual-line {
-      width: 28px;
-      height: 2px;
-      border-radius: 4px;
-      background: linear-gradient(90deg,#ad99ff,#76ddf4);
-    }
-
-    @media (max-width: 850px) {
-      body { padding: 20px; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080d1b" />
+    <meta
+      name="description"
+      content="Create your PROE research community account."
+    />
+    <title>Create Account | PROE Research Platform</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #080d1b;
+        --panel: #10192e;
+        --input: #0a1224;
+        --border: #2b3956;
+        --text: #f4f6ff;
+        --muted: #a0aec8;
+        --purple: #8c78ff;
+        --cyan: #70ddf6;
+        --green: #75e5b5;
+        --error: #ff9baa;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        color-scheme: dark;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 32px;
+        display: grid;
+        place-items: center;
+        color: var(--text);
+        background:
+          radial-gradient(
+            ellipse at 10% 10%,
+            rgba(112, 96, 255, 0.15),
+            transparent 36%
+          ),
+          radial-gradient(
+            ellipse at 90% 90%,
+            rgba(52, 187, 220, 0.11),
+            transparent 36%
+          ),
+          var(--bg);
+        font-family: "DM Sans", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--cyan);
+        outline-offset: 4px;
+      }
 
       .layout {
-        max-width: 570px;
-        min-height: auto;
-        grid-template-columns: 1fr;
+        width: min(1150px, 100%);
+        min-height: 700px;
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        overflow: hidden;
+        border: 1px solid rgba(157, 174, 216, 0.17);
+        border-radius: 28px;
+        background: rgba(16, 25, 46, 0.94);
+        box-shadow: 0 30px 100px rgba(0, 0, 0, 0.32);
       }
 
-      .visual { display: none; }
-      .form-panel { min-height: 0; padding: clamp(27px,7vw,50px); }
-      .footer { margin-top: 27px; }
-    }
+      .form-panel {
+        min-width: 0;
+        padding: clamp(28px, 5vw, 58px);
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(
+            ellipse at top left,
+            rgba(133, 112, 255, 0.07),
+            transparent 42%
+          ),
+          var(--panel);
+      }
 
-    @media (max-width: 480px) {
-      body { padding: 11px; }
-      .layout { border-radius: 19px; }
-      .form-panel { padding: 24px 19px; }
-      .brand { margin-top: 27px; }
-      .brand-caption { font-size: 8px; letter-spacing: 1px; }
-      .heading { margin-top: 25px; }
-      .heading h1 { font-size: 37px; letter-spacing: -1.8px; }
-      .form { gap: 17px; margin-top: 23px; }
-      .input-wrap { min-height: 49px; padding: 0 11px; }
-      .input-wrap input { height: 47px; font-size: 13px; }
-      .footer { font-size: 9px; }
-    }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        color: #bdc8df;
+        font-size: 14px;
+        font-weight: 600;
+        transition:
+          color 0.2s,
+          transform 0.2s;
+      }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-    }
-  </style>
-</head>
+      .back span {
+        color: var(--purple);
+        font-size: 23px;
+      }
 
-<body>
-  <main class="layout">
-    <section class="form-panel" aria-labelledby="registerTitle">
-      <a class="back" href="index.html"><span aria-hidden="true">←</span> Back to home</a>
+      .back:hover {
+        color: white;
+        transform: translateX(-3px);
+      }
 
-      <div class="brand">
-        <span class="brand-mark">P<span>.</span></span>
-        <span>PROE</span>
-        <span class="brand-caption">RESEARCH COMMUNITY</span>
-      </div>
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 34px;
+        font-family: "Manrope", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+      }
 
-      <header class="heading">
-        <div class="eyebrow"><span class="dot"></span> JOIN THE COMMUNITY</div>
-        <h1 id="registerTitle">Join <span class="gradient">PROE.</span></h1>
-        <p>Create your account to share research, exchange ideas, and collaborate with curious minds.</p>
-      </header>
+      .brand-mark {
+        font-size: 26px;
+        letter-spacing: -2px;
+      }
+      .brand-mark span {
+        color: var(--cyan);
+      }
 
-      <form class="form" id="registerForm" novalidate>
-        <div class="field" id="nameField">
-          <label for="fullName">Full name <span class="required">*</span></label>
-          <div class="input-wrap">
-            <span class="field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M4 21v-2a8 8 0 0 1 16 0v2"/>
-              </svg>
-            </span>
-            <input id="fullName" name="fullName" type="text" placeholder="Enter your full name" autocomplete="name" maxlength="100" required aria-describedby="nameError">
-          </div>
-          <small class="error" id="nameError"></small>
+      .brand-caption {
+        margin-left: 9px;
+        padding-left: 12px;
+        border-left: 1px solid rgba(157, 174, 216, 0.23);
+        color: #7786a5;
+        font-family: "DM Sans", sans-serif;
+        font-size: 9px;
+        letter-spacing: 1.5px;
+      }
+
+      .eyebrow,
+      .side-label {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--cyan);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 14px rgba(117, 229, 181, 0.5);
+      }
+
+      .heading {
+        margin-top: 28px;
+      }
+
+      .heading h1 {
+        margin: 17px 0 12px;
+        font-family: "Manrope", sans-serif;
+        font-size: clamp(36px, 4vw, 51px);
+        font-weight: 800;
+        line-height: 1.12;
+        letter-spacing: -2.3px;
+      }
+
+      .gradient {
+        color: transparent;
+        background: linear-gradient(100deg, #ad99ff, #76ddf4);
+        background-clip: text;
+        -webkit-background-clip: text;
+      }
+
+      .heading p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.8;
+      }
+
+      .form {
+        display: grid;
+        gap: 19px;
+        margin-top: 28px;
+      }
+
+      .field {
+        min-width: 0;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 9px;
+        color: #e8edfa;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .required {
+        color: #ff9baa;
+      }
+
+      .input-wrap {
+        min-height: 51px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 0 13px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--input);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .input-wrap:focus-within {
+        border-color: var(--purple);
+        box-shadow: 0 0 0 4px rgba(140, 120, 255, 0.12);
+      }
+
+      .field-icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+        color: #8191b3;
+      }
+
+      .field-icon svg,
+      .eye svg,
+      .security svg {
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .input-wrap input {
+        width: 100%;
+        min-width: 0;
+        height: 49px;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        background: transparent;
+        font-size: 13px;
+        box-shadow: none;
+      }
+
+      .input-wrap input:focus {
+        outline: 0;
+        box-shadow: none;
+      }
+      .input-wrap input::placeholder {
+        color: #7183a3;
+        opacity: 1;
+      }
+
+      .eye {
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+        display: grid;
+        place-items: center;
+        padding: 7px;
+        border: 0;
+        border-radius: 8px;
+        color: #95a5c5;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .eye:hover {
+        color: #c0b4ff;
+        background: rgba(140, 120, 255, 0.12);
+      }
+      .eye svg {
+        width: 21px;
+        height: 21px;
+      }
+      .eye .closed {
+        display: none;
+      }
+      .eye.visible .open {
+        display: none;
+      }
+      .eye.visible .closed {
+        display: block;
+      }
+
+      .error {
+        display: block;
+        margin-top: 5px;
+        color: var(--error);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .field.invalid .input-wrap {
+        border-color: var(--error);
+      }
+
+      .hint {
+        margin: 7px 0 0;
+        color: #8190ad;
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .strength {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .strength span {
+        height: 4px;
+        flex: 1;
+        border-radius: 8px;
+        background: #2a3650;
+        transition: background 0.2s;
+      }
+
+      .strength-label {
+        display: block;
+        margin-top: 6px;
+        color: #8190ad;
+        font-size: 10px;
+      }
+
+      .terms {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #aebbd4;
+        font-size: 11px;
+        line-height: 1.7;
+        cursor: pointer;
+      }
+
+      .terms input {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        margin-top: 2px;
+        accent-color: var(--purple);
+      }
+
+      .terms a {
+        color: #b3a3ff;
+        font-weight: 600;
+      }
+
+      .submit {
+        min-height: 53px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 13px 18px;
+        border: 0;
+        border-radius: 12px;
+        color: white;
+        background: linear-gradient(105deg, #8068ff, #6b82ff);
+        box-shadow: 0 12px 28px rgba(110, 100, 255, 0.2);
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 32px rgba(110, 100, 255, 0.3);
+      }
+
+      .submit:disabled {
+        opacity: 0.7;
+        cursor: wait;
+        transform: none;
+      }
+
+      .message {
+        padding: 11px 13px;
+        border: 1px solid rgba(117, 229, 181, 0.25);
+        border-radius: 10px;
+        color: #a5f3cf;
+        background: rgba(45, 163, 117, 0.09);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .message.error-message {
+        border-color: rgba(255, 130, 151, 0.3);
+        color: #ffb1be;
+        background: rgba(255, 100, 130, 0.08);
+      }
+
+      .security {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        margin: 0;
+        color: #8190ad;
+        font-size: 10px;
+        line-height: 1.7;
+        text-align: center;
+      }
+
+      .security svg {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 15px;
+        color: var(--green);
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 23px;
+        color: #71809e;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        height: 1px;
+        flex: 1;
+        background: rgba(157, 174, 216, 0.15);
+      }
+
+      .sign-in {
+        margin: 15px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.8;
+      }
+
+      .sign-in a {
+        color: #b3a3ff;
+        font-weight: 700;
+      }
+      .sign-in a:hover {
+        color: var(--cyan);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 26px;
+        color: #657491;
+        font-size: 10px;
+      }
+
+      /* Decorative information panel */
+
+      .visual {
+        position: relative;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        padding: clamp(28px, 4vw, 48px);
+        overflow: hidden;
+        border-left: 1px solid rgba(157, 174, 216, 0.12);
+        background:
+          radial-gradient(
+            ellipse at 80% 15%,
+            rgba(118, 105, 255, 0.22),
+            transparent 38%
+          ),
+          radial-gradient(
+            ellipse at 15% 85%,
+            rgba(45, 186, 220, 0.13),
+            transparent 38%
+          ),
+          linear-gradient(155deg, #111c34, #0b1427);
+      }
+
+      .visual::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.2;
+        pointer-events: none;
+        background-image: radial-gradient(
+          rgba(195, 208, 255, 0.5) 0.8px,
+          transparent 0.8px
+        );
+        background-size: 25px 25px;
+      }
+
+      .orb {
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border: 1px solid rgba(151, 137, 255, 0.14);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .orb-one {
+        top: -120px;
+        right: -100px;
+      }
+      .orb-two {
+        right: -160px;
+        bottom: -150px;
+        width: 320px;
+        height: 320px;
+        border-color: rgba(112, 221, 246, 0.12);
+      }
+
+      .visual-content {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+      }
+
+      .side-label {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+      }
+
+      .visual h2 {
+        margin: 28px 0 17px;
+        font-family: "Manrope", sans-serif;
+        font-size: clamp(30px, 3.2vw, 42px);
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -1.7px;
+      }
+
+      .visual p {
+        max-width: 350px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.9;
+      }
+
+      .benefits {
+        display: grid;
+        gap: 22px;
+        margin-top: 39px;
+      }
+
+      .benefit {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .benefit-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(150, 136, 255, 0.2);
+        border-radius: 13px;
+        color: #b7a8ff;
+        background: rgba(134, 115, 255, 0.1);
+        font-size: 18px;
+      }
+
+      .benefit:nth-child(2) .benefit-icon {
+        color: var(--cyan);
+        background: rgba(112, 221, 246, 0.08);
+        border-color: rgba(112, 221, 246, 0.2);
+      }
+
+      .benefit:nth-child(3) .benefit-icon {
+        color: var(--green);
+        background: rgba(117, 229, 181, 0.08);
+        border-color: rgba(117, 229, 181, 0.2);
+      }
+
+      .benefit strong,
+      .benefit small {
+        display: block;
+      }
+      .benefit strong {
+        color: #edf1ff;
+        font-size: 12px;
+      }
+      .benefit small {
+        margin-top: 5px;
+        color: #8796b3;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+
+      .visual-footer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 48px;
+        color: #7d8ba8;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+      }
+
+      .visual-line {
+        width: 28px;
+        height: 2px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #ad99ff, #76ddf4);
+      }
+
+      @media (max-width: 850px) {
+        body {
+          padding: 20px;
+        }
+
+        .layout {
+          max-width: 570px;
+          min-height: auto;
+          grid-template-columns: 1fr;
+        }
+
+        .visual {
+          display: none;
+        }
+        .form-panel {
+          min-height: 0;
+          padding: clamp(27px, 7vw, 50px);
+        }
+        .footer {
+          margin-top: 27px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 11px;
+        }
+        .layout {
+          border-radius: 19px;
+        }
+        .form-panel {
+          padding: 24px 19px;
+        }
+        .brand {
+          margin-top: 27px;
+        }
+        .brand-caption {
+          font-size: 8px;
+          letter-spacing: 1px;
+        }
+        .heading {
+          margin-top: 25px;
+        }
+        .heading h1 {
+          font-size: 37px;
+          letter-spacing: -1.8px;
+        }
+        .form {
+          gap: 17px;
+          margin-top: 23px;
+        }
+        .input-wrap {
+          min-height: 49px;
+          padding: 0 11px;
+        }
+        .input-wrap input {
+          height: 47px;
+          font-size: 13px;
+        }
+        .footer {
+          font-size: 9px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="layout">
+      <section class="form-panel" aria-labelledby="registerTitle">
+        <a class="back" href="index.html"
+          ><span aria-hidden="true">←</span> Back to home</a
+        >
+
+        <div class="brand">
+          <span class="brand-mark">P<span>.</span></span>
+          <span>PROE</span>
+          <span class="brand-caption">RESEARCH COMMUNITY</span>
         </div>
 
-        <div class="field" id="emailField">
-          <label for="email">Email address <span class="required">*</span></label>
-          <div class="input-wrap">
-            <span class="field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <rect x="3.5" y="5.5" width="17" height="13" rx="3"/>
-                <path d="m5 7 7 5.5L19 7"/>
-              </svg>
-            </span>
-            <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" maxlength="254" required aria-describedby="emailError">
+        <header class="heading">
+          <div class="eyebrow">
+            <span class="dot"></span> JOIN THE COMMUNITY
           </div>
-          <small class="error" id="emailError"></small>
-        </div>
+          <h1 id="registerTitle">Join <span class="gradient">PROE.</span></h1>
+          <p>
+            Create your account to share research, exchange ideas, and
+            collaborate with curious minds.
+          </p>
+        </header>
 
-        <div class="field" id="passwordField">
-          <label for="password">Password <span class="required">*</span></label>
-          <div class="input-wrap">
-            <span class="field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <rect x="4.5" y="10" width="15" height="10" rx="2.5"/>
-                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-                <path d="M12 14v2"/>
-              </svg>
-            </span>
-            <input id="password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" required aria-describedby="passwordError strengthLabel">
-            <button class="eye" type="button" data-password="password" aria-label="Show password" aria-pressed="false">
-              <svg class="open" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.5 12s3.4-7 9.5-7 9.5 7 9.5 7-3.4 7-9.5 7-9.5-7-9.5-7Z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg class="closed" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m3 3 18 18"/>
-                <path d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.1 0 9.5 7 9.5 7a15 15 0 0 1-3.1 3.8"/>
-                <path d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.4 7 9.5 7a9.7 9.7 0 0 0 3.1-.5"/>
-              </svg>
-            </button>
+        <form class="form" id="registerForm" novalidate>
+          <div class="field" id="nameField">
+            <label for="fullName"
+              >Full name <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+                </svg>
+              </span>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                autocomplete="name"
+                maxlength="100"
+                required
+                aria-describedby="nameError"
+              />
+            </div>
+            <small class="error" id="nameError"></small>
           </div>
-          <div class="strength" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
+
+          <div class="field" id="emailField">
+            <label for="email"
+              >Email address <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3.5" y="5.5" width="17" height="13" rx="3" />
+                  <path d="m5 7 7 5.5L19 7" />
+                </svg>
+              </span>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                maxlength="254"
+                required
+                aria-describedby="emailError"
+              />
+            </div>
+            <small class="error" id="emailError"></small>
           </div>
-          <small class="strength-label" id="strengthLabel">Use at least 8 characters, including letters and numbers.</small>
-          <small class="error" id="passwordError"></small>
-        </div>
 
-        <div class="field" id="confirmField">
-          <label for="confirmPassword">Confirm password <span class="required">*</span></label>
-          <div class="input-wrap">
-            <span class="field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <rect x="4.5" y="10" width="15" height="10" rx="2.5"/>
-                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-                <path d="m9 15 2 2 4-4"/>
-              </svg>
-            </span>
-            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Enter your password again" autocomplete="new-password" required aria-describedby="confirmError">
-            <button class="eye" type="button" data-password="confirmPassword" aria-label="Show confirmation password" aria-pressed="false">
-              <svg class="open" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.5 12s3.4-7 9.5-7 9.5 7 9.5 7-3.4 7-9.5 7-9.5-7-9.5-7Z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg class="closed" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m3 3 18 18"/>
-                <path d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.1 0 9.5 7 9.5 7a15 15 0 0 1-3.1 3.8"/>
-                <path d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.4 7 9.5 7a9.7 9.7 0 0 0 3.1-.5"/>
-              </svg>
-            </button>
+          <div class="field" id="passwordField">
+            <label for="password"
+              >Password <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="4.5" y="10" width="15" height="10" rx="2.5" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  <path d="M12 14v2" />
+                </svg>
+              </span>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Create a password"
+                autocomplete="new-password"
+                required
+                aria-describedby="passwordError strengthLabel"
+              />
+              <button
+                class="eye"
+                type="button"
+                data-password="password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <svg class="open" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M2.5 12s3.4-7 9.5-7 9.5 7 9.5 7-3.4 7-9.5 7-9.5-7-9.5-7Z"
+                  />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg class="closed" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m3 3 18 18" />
+                  <path
+                    d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.1 0 9.5 7 9.5 7a15 15 0 0 1-3.1 3.8"
+                  />
+                  <path
+                    d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.4 7 9.5 7a9.7 9.7 0 0 0 3.1-.5"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="strength" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <small class="strength-label" id="strengthLabel"
+              >Use at least 8 characters, including letters and numbers.</small
+            >
+            <small class="error" id="passwordError"></small>
           </div>
-          <small class="error" id="confirmError"></small>
-        </div>
 
-        <label class="terms">
-          <input id="acceptTerms" name="acceptTerms" type="checkbox" required>
-          <span>I agree to the <a href="#" id="termsLink">Terms of Use</a> and understand the PROE community guidelines.</span>
-        </label>
-        <small class="error" id="termsError"></small>
+          <div class="field" id="confirmField">
+            <label for="confirmPassword"
+              >Confirm password <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="4.5" y="10" width="15" height="10" rx="2.5" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  <path d="m9 15 2 2 4-4" />
+                </svg>
+              </span>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Enter your password again"
+                autocomplete="new-password"
+                required
+                aria-describedby="confirmError"
+              />
+              <button
+                class="eye"
+                type="button"
+                data-password="confirmPassword"
+                aria-label="Show confirmation password"
+                aria-pressed="false"
+              >
+                <svg class="open" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M2.5 12s3.4-7 9.5-7 9.5 7 9.5 7-3.4 7-9.5 7-9.5-7-9.5-7Z"
+                  />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg class="closed" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m3 3 18 18" />
+                  <path
+                    d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.1 0 9.5 7 9.5 7a15 15 0 0 1-3.1 3.8"
+                  />
+                  <path
+                    d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.4 7 9.5 7a9.7 9.7 0 0 0 3.1-.5"
+                  />
+                </svg>
+              </button>
+            </div>
+            <small class="error" id="confirmError"></small>
+          </div>
 
-        <div class="message" id="registerMessage" role="status" aria-live="polite" hidden></div>
+          <label class="terms">
+            <input
+              id="acceptTerms"
+              name="acceptTerms"
+              type="checkbox"
+              required
+            />
+            <span
+              >I agree to the <a href="#" id="termsLink">Terms of Use</a> and
+              understand the PROE community guidelines.</span
+            >
+          </label>
+          <small class="error" id="termsError"></small>
 
-        <button class="submit" id="createAccount" type="submit">
-          <span id="buttonText">Create account</span>
-          <span aria-hidden="true">→</span>
-        </button>
+          <div
+            class="message"
+            id="registerMessage"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></div>
 
-        <p class="security">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6l7-3Z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-          Your information should be handled securely.
+          <button class="submit" id="createAccount" type="submit">
+            <span id="buttonText">Create account</span>
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <p class="security">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6l7-3Z"
+              />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            Your information should be handled securely.
+          </p>
+        </form>
+
+        <div class="divider">ALREADY A MEMBER?</div>
+        <p class="sign-in">
+          Already have an account? <a href="login.html">Log in to PROE ↗</a>
         </p>
-      </form>
 
-      <div class="divider">ALREADY A MEMBER?</div>
-      <p class="sign-in">Already have an account? <a href="login.html">Log in to PROE ↗</a></p>
+        <footer class="footer">
+          <span>© <span id="year"></span> PROE</span>
+          <span>Research. Review. Advance.</span>
+        </footer>
+      </section>
 
-      <footer class="footer">
-        <span>© <span id="year"></span> PROE</span>
-        <span>Research. Review. Advance.</span>
-      </footer>
-    </section>
-
-    <aside class="visual" aria-label="Benefits of joining PROE">
-      <div class="orb orb-one"></div>
-      <div class="orb orb-two"></div>
-      <div class="visual-content">
-        <div class="side-label"><span class="dot"></span> YOUR RESEARCH SPACE</div>
-        <h2>Make room for<br>your next <span class="gradient">big idea.</span></h2>
-        <p>Join a community built around discovery, constructive feedback, and sharing knowledge.</p>
-
-        <div class="benefits">
-          <div class="benefit">
-            <span class="benefit-icon">✦</span>
-            <div><strong>Explore research</strong><small>Find ideas across different disciplines.</small></div>
+      <aside class="visual" aria-label="Benefits of joining PROE">
+        <div class="orb orb-one"></div>
+        <div class="orb orb-two"></div>
+        <div class="visual-content">
+          <div class="side-label">
+            <span class="dot"></span> YOUR RESEARCH SPACE
           </div>
-          <div class="benefit">
-            <span class="benefit-icon">↗</span>
-            <div><strong>Share your work</strong><small>Bring your research into the conversation.</small></div>
+          <h2>
+            Make room for<br />your next <span class="gradient">big idea.</span>
+          </h2>
+          <p>
+            Join a community built around discovery, constructive feedback, and
+            sharing knowledge.
+          </p>
+
+          <div class="benefits">
+            <div class="benefit">
+              <span class="benefit-icon">✦</span>
+              <div>
+                <strong>Explore research</strong
+                ><small>Find ideas across different disciplines.</small>
+              </div>
+            </div>
+            <div class="benefit">
+              <span class="benefit-icon">↗</span>
+              <div>
+                <strong>Share your work</strong
+                ><small>Bring your research into the conversation.</small>
+              </div>
+            </div>
+            <div class="benefit">
+              <span class="benefit-icon">✓</span>
+              <div>
+                <strong>Grow together</strong
+                ><small>Turn thoughtful feedback into progress.</small>
+              </div>
+            </div>
           </div>
-          <div class="benefit">
-            <span class="benefit-icon">✓</span>
-            <div><strong>Grow together</strong><small>Turn thoughtful feedback into progress.</small></div>
+
+          <div class="visual-footer">
+            <span class="visual-line"></span> BUILT FOR CURIOUS MINDS
           </div>
         </div>
+      </aside>
+    </main>
 
-        <div class="visual-footer"><span class="visual-line"></span> BUILT FOR CURIOUS MINDS</div>
-      </div>
-    </aside>
-  </main>
+    <script>
+      "use strict";
 
-  <script>
-    "use strict";
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("registerForm");
+        const name = document.getElementById("fullName");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirmPassword");
+        const terms = document.getElementById("acceptTerms");
+        const message = document.getElementById("registerMessage");
+        const submit = document.getElementById("createAccount");
+        const buttonText = document.getElementById("buttonText");
+        const strengthBars = document.querySelectorAll(".strength span");
+        const strengthLabel = document.getElementById("strengthLabel");
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("registerForm");
-      const name = document.getElementById("fullName");
-      const email = document.getElementById("email");
-      const password = document.getElementById("password");
-      const confirmPassword = document.getElementById("confirmPassword");
-      const terms = document.getElementById("acceptTerms");
-      const message = document.getElementById("registerMessage");
-      const submit = document.getElementById("createAccount");
-      const buttonText = document.getElementById("buttonText");
-      const strengthBars = document.querySelectorAll(".strength span");
-      const strengthLabel = document.getElementById("strengthLabel");
+        document.getElementById("year").textContent = new Date().getFullYear();
 
-      document.getElementById("year").textContent = new Date().getFullYear();
+        // Show/hide both password fields.
+        document.querySelectorAll("[data-password]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.password);
+            const show = input.type === "password";
 
-      // Show/hide both password fields.
-      document.querySelectorAll("[data-password]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const input = document.getElementById(button.dataset.password);
-          const show = input.type === "password";
-
-          input.type = show ? "text" : "password";
-          button.classList.toggle("visible", show);
-          button.setAttribute("aria-pressed", String(show));
-          button.setAttribute("aria-label", show ? "Hide password" : "Show password");
-        });
-      });
-
-      function setError(input, text) {
-        const field = input.closest(".field");
-        const error = document.getElementById(input.id + "Error");
-
-        if (field) field.classList.toggle("invalid", Boolean(text));
-        if (error) error.textContent = text;
-        input.setAttribute("aria-invalid", String(Boolean(text)));
-      }
-
-      function showMessage(text, isError = false) {
-        message.textContent = text;
-        message.classList.toggle("error-message", isError);
-        message.hidden = false;
-      }
-
-      function updateStrength() {
-        const value = password.value;
-        let score = 0;
-
-        if (value.length >= 8) score++;
-        if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
-        if (/\d/.test(value)) score++;
-        if (/[^A-Za-z0-9]/.test(value)) score++;
-
-        const labels = [
-          "Use at least 8 characters, including letters and numbers.",
-          "Weak password",
-          "Fair password",
-          "Good password",
-          "Strong password"
-        ];
-
-        const colors = ["#2a3650", "#ff8297", "#ffbf69", "#70ddf6", "#75e5b5"];
-
-        strengthBars.forEach((bar, index) => {
-          bar.style.background = index < score ? colors[score] : "#2a3650";
+            input.type = show ? "text" : "password";
+            button.classList.toggle("visible", show);
+            button.setAttribute("aria-pressed", String(show));
+            button.setAttribute(
+              "aria-label",
+              show ? "Hide password" : "Show password",
+            );
+          });
         });
 
-        strengthLabel.textContent = value ? labels[score] : labels[0];
-      }
+        function setError(input, text) {
+          const field = input.closest(".field");
+          const error = document.getElementById(input.id + "Error");
 
-      password.addEventListener("input", updateStrength);
+          if (field) field.classList.toggle("invalid", Boolean(text));
+          if (error) error.textContent = text;
+          input.setAttribute("aria-invalid", String(Boolean(text)));
+        }
 
-      [name, email, password, confirmPassword].forEach((input) => {
-        input.addEventListener("input", () => {
-          setError(input, "");
+        function showMessage(text, isError = false) {
+          message.textContent = text;
+          message.classList.toggle("error-message", isError);
+          message.hidden = false;
+        }
+
+        function updateStrength() {
+          const value = password.value;
+          let score = 0;
+
+          if (value.length >= 8) score++;
+          if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+          if (/\d/.test(value)) score++;
+          if (/[^A-Za-z0-9]/.test(value)) score++;
+
+          const labels = [
+            "Use at least 8 characters, including letters and numbers.",
+            "Weak password",
+            "Fair password",
+            "Good password",
+            "Strong password",
+          ];
+
+          const colors = [
+            "#2a3650",
+            "#ff8297",
+            "#ffbf69",
+            "#70ddf6",
+            "#75e5b5",
+          ];
+
+          strengthBars.forEach((bar, index) => {
+            bar.style.background = index < score ? colors[score] : "#2a3650";
+          });
+
+          strengthLabel.textContent = value ? labels[score] : labels[0];
+        }
+
+        password.addEventListener("input", updateStrength);
+
+        [name, email, password, confirmPassword].forEach((input) => {
+          input.addEventListener("input", () => {
+            setError(input, "");
+            message.hidden = true;
+
+            if (input === password && confirmPassword.value) {
+              setError(
+                confirmPassword,
+                password.value === confirmPassword.value
+                  ? ""
+                  : "Passwords do not match.",
+              );
+            }
+          });
+        });
+
+        document
+          .getElementById("termsLink")
+          .addEventListener("click", (event) => {
+            event.preventDefault();
+            showMessage(
+              "Please follow the official PROE terms and community guidelines when they are provided.",
+              true,
+            );
+          });
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
           message.hidden = true;
 
-          if (input === password && confirmPassword.value) {
-            setError(
-              confirmPassword,
-              password.value === confirmPassword.value ? "" : "Passwords do not match."
-            );
+          [name, email, password, confirmPassword].forEach((input) =>
+            setError(input, ""),
+          );
+          document.getElementById("termsError").textContent = "";
+
+          let valid = true;
+
+          if (name.value.trim().length < 2) {
+            setError(name, "Enter your full name.");
+            valid = false;
           }
-        });
-      });
 
-      document.getElementById("termsLink").addEventListener("click", (event) => {
-        event.preventDefault();
-        showMessage("Please follow the official PROE terms and community guidelines when they are provided.", true);
-      });
+          const emailValue = email.value.trim();
+          if (
+            !emailValue ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue) ||
+            emailValue.length > 254
+          ) {
+            setError(email, "Enter a valid email address.");
+            valid = false;
+          }
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        message.hidden = true;
+          if (password.value.length < 8) {
+            setError(password, "Password must contain at least 8 characters.");
+            valid = false;
+          }
 
-        [name, email, password, confirmPassword].forEach((input) => setError(input, ""));
-        document.getElementById("termsError").textContent = "";
+          if (password.value !== confirmPassword.value) {
+            setError(confirmPassword, "Passwords do not match.");
+            valid = false;
+          }
 
-        let valid = true;
+          if (!terms.checked) {
+            document.getElementById("termsError").textContent =
+              "Please accept the terms to continue.";
+            valid = false;
+          }
 
-        if (name.value.trim().length < 2) {
-          setError(name, "Enter your full name.");
-          valid = false;
-        }
+          if (!valid) return;
 
-        const emailValue = email.value.trim();
-        if (!emailValue || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue) || emailValue.length > 254) {
-          setError(email, "Enter a valid email address.");
-          valid = false;
-        }
-
-        if (password.value.length < 8) {
-          setError(password, "Password must contain at least 8 characters.");
-          valid = false;
-        }
-
-        if (password.value !== confirmPassword.value) {
-          setError(confirmPassword, "Passwords do not match.");
-          valid = false;
-        }
-
-        if (!terms.checked) {
-          document.getElementById("termsError").textContent = "Please accept the terms to continue.";
-          valid = false;
-        }
-
-        if (!valid) return;
-
-        /*
+          /*
           Registration API is intentionally not guessed.
           Add the real endpoint and request format supplied by
           the PROE backend team before enabling account creation.
         */
-        const REGISTER_API = "";
+          const REGISTER_API = "http://localhost:8081/proe/api/auth/register";
 
-        if (!REGISTER_API) {
-          showMessage(
-            "Your registration form is ready. Account creation needs the backend registration API endpoint.",
-            true
-          );
-          return;
-        }
-
-        submit.disabled = true;
-        buttonText.textContent = "Creating account...";
-
-        try {
-          const response = await fetch(REGISTER_API, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              fullName: name.value.trim(),
-              email: email.value.trim(),
-              password: password.value
-            })
-          });
-
-          const result = await response.json().catch(() => ({}));
-
-          if (!response.ok) {
-            throw new Error(result.message || "Unable to create your account.");
+          if (!REGISTER_API) {
+            showMessage(
+              "Your registration form is ready. Account creation needs the backend registration API endpoint.",
+              true,
+            );
+            return;
           }
 
-          showMessage(result.message || "Account created successfully.");
+          submit.disabled = true;
+          buttonText.textContent = "Creating account...";
 
-          if (
-            typeof result.redirectUrl === "string" &&
-            result.redirectUrl.startsWith("/") &&
-            !result.redirectUrl.startsWith("//")
-          ) {
-            window.location.assign(result.redirectUrl);
+          try {
+            const response = await fetch(REGISTER_API, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                fullName: name.value.trim(),
+                email: email.value.trim(),
+                password: password.value,
+              }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+              throw new Error(
+                result.message || "Unable to create your account.",
+              );
+            }
+
+            showMessage(result.message || "Account created successfully.");
+
+            if (
+              typeof result.redirectUrl === "string" &&
+              result.redirectUrl.startsWith("/") &&
+              !result.redirectUrl.startsWith("//")
+            ) {
+              window.location.assign(result.redirectUrl);
+            }
+          } catch (error) {
+            showMessage(
+              error.message || "Unable to connect to the server.",
+              true,
+            );
+          } finally {
+            submit.disabled = false;
+            buttonText.textContent = "Create account";
           }
-        } catch (error) {
-          showMessage(error.message || "Unable to connect to the server.", true);
-        } finally {
-          submit.disabled = false;
-          buttonText.textContent = "Create account";
-        }
+        });
       });
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
