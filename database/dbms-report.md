@@ -59,7 +59,9 @@ In academic workflows, a `USER` acts in specialized roles:
 - **Business Rule:** An author cannot review their own paper ($\text{author\_id} \neq \text{reviewer\_id}$).
 
 ### 2.3 ER Diagram Artifact
-The finalized high-resolution schema diagram is archived as [`er-diagram.png`](file:///c:/Users/pdave/Downloads/Java%20Dbms%20Project/Person%203/er-diagram.png).
+The finalized high-resolution schema diagram is embedded below:
+
+![PROE ER Diagram](er-diagram.png)
 
 ---
 
