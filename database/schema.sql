@@ -28,7 +28,7 @@ CREATE TABLE users (
     email VARCHAR(150) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    
     -- Primary and Unique Candidate Keys
     CONSTRAINT pk_users PRIMARY KEY (user_id),
     CONSTRAINT uk_users_email UNIQUE (email)
@@ -47,10 +47,10 @@ CREATE TABLE papers (
     keywords VARCHAR(255) NOT NULL,
     paper_url VARCHAR(500) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    
     -- Primary Key
     CONSTRAINT pk_papers PRIMARY KEY (paper_id),
-
+    
     -- Foreign Key referencing users with cascade delete
     CONSTRAINT fk_papers_author FOREIGN KEY (author_id)
         REFERENCES users (user_id)
@@ -75,24 +75,24 @@ CREATE TABLE reviews (
     comments TEXT NOT NULL,
     recommendation ENUM('ACCEPT', 'REVISE', 'REJECT') NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    
     -- Primary Key
     CONSTRAINT pk_reviews PRIMARY KEY (review_id),
-
+    
     -- Foreign Keys
     CONSTRAINT fk_reviews_paper FOREIGN KEY (paper_id)
         REFERENCES papers (paper_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-
+        
     CONSTRAINT fk_reviews_reviewer FOREIGN KEY (reviewer_id)
         REFERENCES users (user_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-
+        
     -- Check Constraint on rating range
     CONSTRAINT chk_reviews_rating CHECK (rating >= 1 AND rating <= 5),
-
+    
     -- Business rule: One review per reviewer per paper
     CONSTRAINT uk_paper_reviewer UNIQUE (paper_id, reviewer_id)
 ) ENGINE=InnoDB;
@@ -108,7 +108,7 @@ CREATE TABLE audit_logs (
     record_id INT UNSIGNED NOT NULL,
     description VARCHAR(255) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    
     CONSTRAINT pk_audit_logs PRIMARY KEY (log_id)
 ) ENGINE=InnoDB;
 
