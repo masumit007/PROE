@@ -28,3 +28,10 @@ npm-debug.log*
 # IDE files
 .vscode/
 .idea/
+# Java crash and replay logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Uploaded research PDFs
+/uploads/*
+!/uploads/.gitkeep
