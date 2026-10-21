@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -711,6 +711,18 @@
         color: var(--sp-green);
       }
 
+      body.submit-page .sp-control[aria-invalid="true"] {
+        border-color: rgba(255, 145, 167, 0.7);
+      }
+
+      body.submit-page .sp-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        filter: none;
+        box-shadow: none;
+      }
+
       /* Sidebar */
 
       body.submit-page .sp-sidebar {
@@ -1328,8 +1340,9 @@
                     </div>
 
                     <span class="sp-help">
-                      For security, the actual PDF must be uploaded to the
-                      server when backend integration is configured.
+                      Only PDF files up to 10 MB are accepted. Saved drafts do
+                      not include the PDF, so attach it again if you return
+                      later.
                     </span>
                   </div>
                 </section>
@@ -1382,8 +1395,8 @@
                 </div>
 
                 <p class="sp-help">
-                  Reviewing this form does not publish or upload your paper.
-                  Final submission requires a connected backend API.
+                  Selecting Review submission opens a summary. Your paper is
+                  uploaded only after you confirm in the review window.
                 </p>
               </form>
             </section>
@@ -1496,8 +1509,7 @@
           Review your research
         </h2>
         <p style="color: #97a5c0; font-size: 13px; line-height: 1.8">
-          Check the information below before connecting this form to the
-          submission API.
+          Check the information below, then submit your paper.
         </p>
         <div
           id="spReviewContent"
@@ -1510,6 +1522,13 @@
             line-height: 1.8;
           "
         ></div>
+        <div
+          class="sp-status"
+          id="spDialogStatus"
+          role="status"
+          aria-live="polite"
+          style="margin-bottom: 16px"
+        ></div>
         <div class="sp-actions">
           <button
             class="sp-button sp-button-secondary"
@@ -1519,7 +1538,7 @@
             ← Back to edit
           </button>
           <button class="sp-button" id="spFinishReview" type="button">
-            Finish review ✓
+            Submit paper ✓
           </button>
         </div>
         <p
@@ -1530,55 +1549,376 @@
             margin-top: 18px;
           "
         >
-          This is a frontend review only. Your paper is not sent to a server.
+          Only the title, abstract, keywords (including the topic), the PDF,
+          and your user ID are sent to the PROE server.
         </p>
       </div>
     </dialog>
+
 
     <script>
       (() => {
         "use strict";
 
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+
+        const API_ORIGIN = "http://127.0.0.1:3001";
+        const API_URL = `${API_ORIGIN}/api/papers/upload`;
+
+        // The original page read the author ID from this localStorage key.
+        // It is the only user-ID mechanism visible in this file. If your
+        // login flow stores the ID elsewhere, change this one constant.
+        const AUTHOR_ID_STORAGE_KEY = "proe-user-id";
+
+        const DRAFT_KEY = "proe-submit-paper-draft";
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+        const REQUEST_TIMEOUT_MS = 120000;
+        const SUBMIT_LABEL = "Submit paper ✓";
+        const SUBMITTING_LABEL = "Submitting...";
+        const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // ==========================================
+        // ELEMENTS
+        // ==========================================
+
         const $ = (id) => document.getElementById(id);
 
-        const form = $("spForm");
-        const title = $("spTitle");
-        const topic = $("spTopic");
-        const keywords = $("spKeywords");
-        const abstractField = $("spAbstract");
-        const author = $("spAuthor");
-        const email = $("spEmail");
-        const institution = $("spInstitution");
-        const fileInput = $("spFile");
-        const declaration = $("spDeclaration");
-        const status = $("spStatus");
-        const dialog = $("spReviewDialog");
+        const el = {
+          form: $("spForm"),
+          title: $("spTitle"),
+          topic: $("spTopic"),
+          keywords: $("spKeywords"),
+          abstract: $("spAbstract"),
+          author: $("spAuthor"),
+          email: $("spEmail"),
+          institution: $("spInstitution"),
+          fileInput: $("spFile"),
+          dropzone: $("spDropzone"),
+          fileCard: $("spFileCard"),
+          fileName: $("spFileName"),
+          fileSize: $("spFileSize"),
+          removeFile: $("spRemoveFile"),
+          declaration: $("spDeclaration"),
+          status: $("spStatus"),
+          dialog: $("spReviewDialog"),
+          dialogStatus: $("spDialogStatus"),
+          reviewContent: $("spReviewContent"),
+          saveButton: $("spSaveButton"),
+          clearButton: $("spClearButton"),
+          finishReview: $("spFinishReview"),
+          editButton: $("spEditButton"),
 
-        const DRAFT_KEY = "proe_research_submission_draft_v2";
-        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+          // Optional display elements (handled safely when absent)
+          titleCount: $("spTitleCount"),
+          abstractCount: $("spAbstractCount"),
+          progressPercent: $("spProgressPercent"),
+          progressTrack: $("spProgressTrack"),
+          progressFill: $("spProgressFill"),
+          progressCaption: $("spProgressCaption"),
+          checkDetails: $("spCheckDetails"),
+          checkAuthor: $("spCheckAuthor"),
+          checkFile: $("spCheckFile"),
+          previewTitle: $("spPreviewTitle"),
+          previewTopic: $("spPreviewTopic"),
+          previewAbstract: $("spPreviewAbstract"),
+          previewKeywords: $("spPreviewKeywords"),
+          draftIndicator: $("spDraftIndicator"),
+          year: $("spYear")
+        };
+
+        const requiredElements = [
+          "form",
+          "title",
+          "topic",
+          "abstract",
+          "author",
+          "email",
+          "fileInput",
+          "dropzone",
+          "fileCard",
+          "fileName",
+          "fileSize",
+          "removeFile",
+          "declaration",
+          "status",
+          "dialog",
+          "reviewContent",
+          "saveButton",
+          "clearButton",
+          "finishReview",
+          "editButton"
+        ];
+
+        const missingElements = requiredElements.filter((key) => !el[key]);
+
+        if (missingElements.length > 0) {
+          console.error(
+            "PROE submit page: required elements are missing:",
+            missingElements.join(", ")
+          );
+          return;
+        }
+
+        // ==========================================
+        // STATE
+        // ==========================================
 
         let selectedFile = null;
-        let lastSavedAt = null;
+        let selectionToken = 0;
+        let isSubmitting = false;
 
-        $("spYear").textContent = new Date().getFullYear();
+        const textOf = (node) => (node ? node.textContent.trim() : "");
 
-        function showStatus(message, type = "") {
-          status.textContent = message;
-          status.className = ("sp-status " + type).trim();
+        const defaults = {
+          previewTitle: textOf(el.previewTitle),
+          previewTopic: textOf(el.previewTopic),
+          previewAbstract: textOf(el.previewAbstract),
+          progressCaption: textOf(el.progressCaption)
+        };
+
+        // ==========================================
+        // SMALL HELPERS
+        // ==========================================
+
+        function setText(node, text) {
+          if (node) node.textContent = text;
         }
 
-        function updateCounter(input, output, max) {
-          $(output).textContent = `${input.value.length} / ${max}`;
+        function readValue(node) {
+          return node ? node.value : "";
         }
 
-        function validPdf(file) {
+        function formatFileSize(bytes) {
+          const mb = bytes / (1024 * 1024);
+          if (mb > 0 && mb < 0.01) return "< 0.01 MB";
+          return `${mb.toFixed(2)} MB`;
+        }
+
+        function formatSavedAt(iso, withDate) {
+          const date = new Date(iso);
+          if (Number.isNaN(date.getTime())) return "";
+
+          return withDate
+            ? date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
+            : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }
+
+        function parseKeywords(raw) {
+          const seen = new Set();
+
+          return String(raw || "")
+            .split(",")
+            .map((keyword) => keyword.trim())
+            .filter((keyword) => {
+              if (!keyword) return false;
+              const key = keyword.toLowerCase();
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+        }
+
+        function getData() {
+          return {
+            title: readValue(el.title).trim(),
+            topic: readValue(el.topic),
+            keywords: readValue(el.keywords).trim(),
+            abstract: readValue(el.abstract).trim(),
+            author: readValue(el.author).trim(),
+            email: readValue(el.email).trim(),
+            institution: readValue(el.institution).trim(),
+            declaration: Boolean(el.declaration.checked)
+          };
+        }
+
+        function hasAnyInput() {
+          const data = getData();
+
+          return Boolean(
+            data.title ||
+              data.topic ||
+              data.keywords ||
+              data.abstract ||
+              data.author ||
+              data.email ||
+              data.institution ||
+              data.declaration
+          );
+        }
+
+        // ==========================================
+        // STATUS MESSAGES
+        // ==========================================
+
+        function renderStatus(target, content, type) {
+          if (!target) return;
+
+          target.className = "sp-status" + (type ? ` ${type}` : "");
+          target.textContent = "";
+
+          if (!content || (Array.isArray(content) && content.length === 0)) {
+            return;
+          }
+
+          if (Array.isArray(content)) {
+            const intro = document.createElement("div");
+            intro.textContent = "Please fix the following before continuing:";
+
+            const list = document.createElement("ul");
+            list.style.margin = "6px 0 0";
+            list.style.paddingLeft = "20px";
+
+            content.forEach((message) => {
+              const item = document.createElement("li");
+              item.textContent = message;
+              list.appendChild(item);
+            });
+
+            target.append(intro, list);
+            return;
+          }
+
+          target.textContent = content;
+        }
+
+        function showStatus(content, type) {
+          renderStatus(el.status, content, type);
+        }
+
+        function showDialogStatus(content, type) {
+          renderStatus(el.dialogStatus || el.status, content, type);
+        }
+
+        // ==========================================
+        // COUNTERS, PREVIEW, PROGRESS
+        // ==========================================
+
+        function limitOf(node, fallback) {
+          return node && node.maxLength > 0 ? node.maxLength : fallback;
+        }
+
+        function updateCounters() {
+          setText(
+            el.titleCount,
+            `${el.title.value.length} / ${limitOf(el.title, 200)}`
+          );
+          setText(
+            el.abstractCount,
+            `${el.abstract.value.length} / ${limitOf(el.abstract, 10000)}`
+          );
+        }
+
+        function updatePreview() {
+          const data = getData();
+
+          setText(el.previewTitle, data.title || defaults.previewTitle);
+          setText(el.previewTopic, data.topic || defaults.previewTopic);
+          setText(el.previewAbstract, data.abstract || defaults.previewAbstract);
+
+          if (el.previewKeywords) {
+            el.previewKeywords.textContent = "";
+
+            parseKeywords(data.keywords)
+              .slice(0, 8)
+              .forEach((keyword) => {
+                const chip = document.createElement("span");
+                chip.className = "sp-keyword-chip";
+                chip.textContent = keyword;
+                el.previewKeywords.appendChild(chip);
+              });
+          }
+
+          updateCounters();
+        }
+
+        function updateProgress() {
+          const data = getData();
+
+          const detailsDone = Boolean(data.title && data.topic && data.abstract);
+          const authorDone = Boolean(data.author && EMAIL_PATTERN.test(data.email));
+          const fileDone = Boolean(selectedFile);
+          const declarationDone = data.declaration;
+
+          const checks = [
+            Boolean(data.title),
+            Boolean(data.topic),
+            Boolean(data.abstract),
+            Boolean(data.author),
+            EMAIL_PATTERN.test(data.email),
+            fileDone,
+            declarationDone
+          ];
+
+          const completed = checks.filter(Boolean).length;
+          const percent = Math.round((completed / checks.length) * 100);
+
+          setText(el.progressPercent, `${percent}% complete`);
+
+          if (el.progressFill) el.progressFill.style.width = `${percent}%`;
+
+          if (el.progressTrack) {
+            el.progressTrack.setAttribute("aria-valuenow", String(percent));
+          }
+
+          let caption = defaults.progressCaption;
+
+          if (completed === 0) {
+            caption = defaults.progressCaption;
+          } else if (percent === 100) {
+            caption = "Everything looks ready. Review your submission when you are ready.";
+          } else if (!detailsDone) {
+            caption = "Add your paper title, topic, and abstract.";
+          } else if (!authorDone) {
+            caption = "Add the author name and a valid contact email.";
+          } else if (!fileDone) {
+            caption = "Attach your research paper as a PDF.";
+          } else {
+            caption = "Confirm the declaration to continue.";
+          }
+
+          setText(el.progressCaption, caption);
+
+          setText(el.checkDetails, detailsDone ? "✓" : "1");
+          setText(el.checkAuthor, authorDone ? "✓" : "2");
+          setText(el.checkFile, fileDone ? "✓" : "3");
+        }
+
+        function refreshView() {
+          updatePreview();
+          updateProgress();
+        }
+
+        // ==========================================
+        // PDF FILE SELECTION
+        // ==========================================
+
+        function readBytes(blob) {
+          if (typeof blob.arrayBuffer === "function") {
+            return blob.arrayBuffer();
+          }
+
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsArrayBuffer(blob);
+          });
+        }
+
+        // Returns an error message, or an empty string when the file is valid.
+        async function validatePdf(file) {
           if (!file) return "Please select your research PDF.";
 
-          const hasPdfExtension = file.name.toLowerCase().endsWith(".pdf");
-          const correctMime = !file.type || file.type === "application/pdf";
+          const name = (file.name || "").toLowerCase();
+          const type = (file.type || "").toLowerCase();
 
-          if (!hasPdfExtension || !correctMime) {
-            return "Please choose a valid PDF file.";
+          if (
+            !name.endsWith(".pdf") ||
+            (type && type !== "application/pdf" && type !== "application/x-pdf")
+          ) {
+            return "Please choose a PDF file (.pdf).";
           }
 
           if (file.size === 0) {
@@ -1586,480 +1926,733 @@
           }
 
           if (file.size > MAX_FILE_SIZE) {
-            return "The PDF exceeds the 10 MB file-size limit.";
+            return `The PDF is ${formatFileSize(file.size)}, which exceeds the 10 MB limit.`;
+          }
+
+          try {
+            const head = new Uint8Array(await readBytes(file.slice(0, 1024)));
+            const text = String.fromCharCode.apply(null, head);
+
+            if (!text.includes("%PDF-")) {
+              return "This file does not appear to be a valid PDF.";
+            }
+          } catch (error) {
+            return "The selected file could not be read. Please choose it again.";
           }
 
           return "";
         }
 
-        function displayFile(file) {
-          selectedFile = file;
-          $("spFileCard").classList.add("is-visible");
-          $("spFileName").textContent = file.name;
-          $("spFileSize").textContent =
-            `${(file.size / (1024 * 1024)).toFixed(2)} MB · PDF document`;
-          $("spCheckFile").textContent = "✓";
+        function showFileCard(file) {
+          el.fileName.textContent = file.name;
+          el.fileSize.textContent = `${formatFileSize(file.size)} · PDF document`;
+          el.fileCard.classList.add("is-visible");
         }
 
-        function removeFile() {
+        function hideFileCard() {
+          el.fileCard.classList.remove("is-visible");
+          el.fileName.textContent = "";
+          el.fileSize.textContent = "";
+        }
+
+        // Keep the <input type="file"> aligned with the selected-file state.
+        function syncInputFiles(file) {
+          try {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            el.fileInput.files = transfer.files;
+          } catch (error) {
+            // Some browsers do not allow this. selectedFile remains the
+            // source of truth for display and upload.
+          }
+        }
+
+        function restoreInputFromState() {
+          if (selectedFile) {
+            syncInputFiles(selectedFile);
+          } else {
+            el.fileInput.value = "";
+          }
+        }
+
+        function resetFileSelection() {
+          selectionToken += 1; // cancels any validation still in flight
           selectedFile = null;
-          fileInput.value = "";
-          $("spFileCard").classList.remove("is-visible");
-          $("spFileName").textContent = "";
-          $("spFileSize").textContent = "";
-          $("spCheckFile").textContent = "3";
+          el.fileInput.value = "";
+          hideFileCard();
           updateProgress();
         }
 
-        function getData() {
-          return {
-            title: title.value.trim(),
-            topic: topic.value,
-            keywords: keywords.value.trim(),
-            abstract: abstractField.value.trim(),
-            author: author.value.trim(),
-            email: email.value.trim(),
-            institution: institution.value.trim(),
-            declaration: declaration.checked,
-          };
+        async function handleFile(file, options) {
+          const settings = options || {};
+          const fromPicker = Boolean(settings.fromPicker);
+          const silent = Boolean(settings.silent);
+
+          const token = ++selectionToken;
+          const previous = selectedFile;
+          const error = await validatePdf(file);
+
+          if (token !== selectionToken) return; // a newer selection superseded this one
+
+          if (error) {
+            if (fromPicker) restoreInputFromState();
+
+            showStatus(
+              previous
+                ? `${error} Your previous selection (${previous.name}) was kept.`
+                : error,
+              "error"
+            );
+            return;
+          }
+
+          selectedFile = file;
+
+          if (!fromPicker) syncInputFiles(file);
+
+          showFileCard(file);
+          updateProgress();
+
+          if (!silent) showStatus("PDF selected successfully.", "success");
         }
 
-        function updatePreview() {
-          const data = getData();
+        el.fileInput.addEventListener("change", () => {
+          const file = el.fileInput.files && el.fileInput.files[0];
 
-          $("spTitleCount").textContent = `${title.value.length} / 200`;
-          $("spAbstractCount").textContent =
-            `${abstractField.value.length} / 10000`;
+          if (!file) {
+            // Picker was cancelled; some browsers clear the input.
+            restoreInputFromState();
+            return;
+          }
 
-          $("spPreviewTitle").textContent =
-            data.title || "Your paper title will appear here";
+          handleFile(file, { fromPicker: true });
+        });
 
-          $("spPreviewTopic").textContent = data.topic || "Research topic";
+        el.removeFile.addEventListener("click", () => {
+          resetFileSelection();
+          showStatus("PDF removed. You can select another PDF.");
+        });
 
-          $("spPreviewAbstract").textContent =
-            data.abstract ||
-            "Your abstract will appear here once you begin writing.";
+        // ---------- Drag and drop ----------
 
-          const keywordContainer = $("spPreviewKeywords");
-          keywordContainer.replaceChildren();
+        function dragHasFiles(event) {
+          return Boolean(
+            event.dataTransfer &&
+              Array.prototype.includes.call(event.dataTransfer.types || [], "Files")
+          );
+        }
 
-          const list = data.keywords
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)
-            .slice(0, 8);
+        ["dragenter", "dragover"].forEach((name) => {
+          el.dropzone.addEventListener(name, (event) => {
+            event.preventDefault();
 
-          list.forEach((word) => {
-            const chip = document.createElement("span");
-            chip.className = "sp-keyword-chip";
-            chip.textContent = word;
-            keywordContainer.appendChild(chip);
+            if (dragHasFiles(event)) {
+              event.dataTransfer.dropEffect = "copy";
+              el.dropzone.classList.add("is-dragging");
+            }
           });
+        });
 
-          updateProgress();
-        }
+        el.dropzone.addEventListener("dragleave", (event) => {
+          if (!el.dropzone.contains(event.relatedTarget)) {
+            el.dropzone.classList.remove("is-dragging");
+          }
+        });
 
-        function updateProgress() {
-          const data = getData();
+        el.dropzone.addEventListener("drop", (event) => {
+          event.preventDefault();
+          el.dropzone.classList.remove("is-dragging");
 
-          const sections = [
-            Boolean(data.title && data.topic && data.abstract.length >= 50),
-            Boolean(
-              data.author && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email),
-            ),
-            Boolean(selectedFile && !validPdf(selectedFile)),
-            Boolean(data.declaration),
-          ];
+          const files = event.dataTransfer && event.dataTransfer.files;
 
-          const completed = sections.filter(Boolean).length;
-          const percent = Math.round((completed / sections.length) * 100);
+          if (!files || files.length === 0) return;
 
-          $("spProgressFill").style.width = percent + "%";
-          $("spProgressPercent").textContent = percent + "% complete";
-          $("spProgressTrack").setAttribute("aria-valuenow", String(percent));
+          if (files.length > 1) {
+            showStatus("Please drop a single PDF file.", "error");
+            return;
+          }
 
-          const messages = [
-            "Start by adding your paper details.",
-            "Good start. Continue with the required information.",
-            "Your paper details are taking shape.",
-            "Almost there. Check your document and declaration.",
-            "All required fields are complete. You can review your submission.",
-          ];
+          handleFile(files[0], { fromPicker: false });
+        });
 
-          $("spProgressCaption").textContent = messages[completed];
+        // Stop the browser from navigating away if a file lands outside the dropzone.
+        ["dragover", "drop"].forEach((name) => {
+          window.addEventListener(name, (event) => {
+            if (dragHasFiles(event) && !el.dropzone.contains(event.target)) {
+              event.preventDefault();
 
-          $("spCheckDetails").textContent = sections[0] ? "✓" : "1";
-          $("spCheckAuthor").textContent = sections[1] ? "✓" : "2";
-          $("spCheckFile").textContent = sections[2] && sections[3] ? "✓" : "3";
-        }
+              if (name === "dragover") event.dataTransfer.dropEffect = "none";
+            }
+          });
+        });
+
+        // ==========================================
+        // VALIDATION
+        // ==========================================
 
         function validateForm() {
-          const checks = [
-            [
-              title,
-              title.value.trim().length > 0,
-              "Please enter your paper title.",
-            ],
-            [topic, Boolean(topic.value), "Please select a research topic."],
-            [
-              abstractField,
-              abstractField.value.trim().length >= 50,
-              "Please write an abstract containing at least 50 characters.",
-            ],
-            [
-              author,
-              author.value.trim().length > 0,
-              "Please enter the author's name.",
-            ],
-            [
-              email,
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()),
-              "Please enter a valid contact email address.",
-            ],
-            [
-              fileInput,
-              Boolean(selectedFile),
-              "Please select your research PDF.",
-            ],
-            [
-              declaration,
-              declaration.checked,
-              "Please confirm the submission declaration.",
-            ],
-          ];
+          const data = getData();
+          const problems = [];
 
-          for (const [element, valid, message] of checks) {
-            element.removeAttribute("aria-invalid");
+          if (!data.title) {
+            problems.push({ field: el.title, message: "Enter your paper title." });
+          }
 
-            if (!valid) {
-              element.setAttribute("aria-invalid", "true");
-              showStatus(message, "error");
+          if (!data.topic) {
+            problems.push({ field: el.topic, message: "Select a research topic." });
+          }
 
-              if (element === fileInput) {
-                $("spDropzone").scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                $("spDropzone").focus?.();
-              } else {
-                element.focus({ preventScroll: true });
-                element.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
+          if (!data.abstract) {
+            problems.push({ field: el.abstract, message: "Enter your abstract." });
+          }
 
-              return false;
+          if (!data.author) {
+            problems.push({ field: el.author, message: "Enter the author name." });
+          }
+
+          if (!data.email) {
+            problems.push({ field: el.email, message: "Enter your contact email." });
+          } else if (!EMAIL_PATTERN.test(data.email)) {
+            problems.push({
+              field: el.email,
+              message: "Enter a valid email address (for example, you@example.com)."
+            });
+          }
+
+          if (!selectedFile) {
+            problems.push({
+              field: el.fileInput,
+              message: "Attach your research paper as a PDF."
+            });
+          }
+
+          if (!data.declaration) {
+            problems.push({
+              field: el.declaration,
+              message: "Confirm the declaration before continuing."
+            });
+          }
+
+          return problems;
+        }
+
+        function markInvalid(problems) {
+          [
+            el.title,
+            el.topic,
+            el.keywords,
+            el.abstract,
+            el.author,
+            el.email,
+            el.institution
+          ].forEach((node) => {
+            if (node) node.removeAttribute("aria-invalid");
+          });
+
+          problems.forEach((problem) => {
+            if (
+              problem.field &&
+              problem.field !== el.fileInput &&
+              problem.field !== el.declaration
+            ) {
+              problem.field.setAttribute("aria-invalid", "true");
             }
+          });
+        }
+
+        function focusFirstProblem(problems) {
+          const first = problems[0] && problems[0].field;
+          if (!first) return;
+
+          if (first === el.fileInput) {
+            el.dropzone.scrollIntoView({ block: "center" });
+          } else {
+            first.focus();
           }
+        }
 
-          const pdfError = validPdf(selectedFile);
+        // ==========================================
+        // DRAFTS (text fields only; the PDF cannot be restored)
+        // ==========================================
 
-          if (pdfError) {
-            showStatus(pdfError, "error");
-            return false;
+        function setDraftIndicator(text) {
+          setText(el.draftIndicator, text);
+        }
+
+        function readDraft() {
+          try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return null;
+
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : null;
+          } catch (error) {
+            console.warn("Saved draft could not be read.", error);
+            return null;
           }
-
-          showStatus("");
-          return true;
         }
 
         function saveDraft() {
-          const data = getData();
+          if (!hasAnyInput()) {
+            showStatus("There is nothing to save yet. Fill in some fields first.");
+            return;
+          }
+
+          const draft = {
+            version: 1,
+            title: el.title.value,
+            topic: el.topic.value,
+            keywords: readValue(el.keywords),
+            abstract: el.abstract.value,
+            author: el.author.value,
+            email: el.email.value,
+            institution: readValue(el.institution),
+            declaration: el.declaration.checked,
+            savedAt: new Date().toISOString()
+          };
 
           try {
-            localStorage.setItem(
-              DRAFT_KEY,
-              JSON.stringify({
-                ...data,
-                savedAt: new Date().toISOString(),
-              }),
-            );
-
-            lastSavedAt = new Date();
-
-            $("spDraftIndicator").textContent = "Draft saved in this browser";
-
-            showStatus(
-              "Draft saved in this browser. Your PDF file is not saved with the draft.",
-              "success",
-            );
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
           } catch (error) {
+            console.warn("Draft could not be saved.", error);
             showStatus(
-              "The draft could not be saved. Check whether browser storage is available.",
-              "error",
+              "Draft could not be saved because browser storage is unavailable or full.",
+              "error"
             );
+            return;
           }
+
+          setDraftIndicator(`Draft saved at ${formatSavedAt(draft.savedAt, false)}`);
+
+          showStatus(
+            selectedFile
+              ? "Draft saved on this device. Drafts do not include your PDF, so you will need to attach it again later."
+              : "Draft saved on this device.",
+            "success"
+          );
         }
 
         function loadDraft() {
-          try {
-            const raw = localStorage.getItem(DRAFT_KEY);
-            if (!raw) return;
+          const draft = readDraft();
+          if (!draft) return;
 
-            const data = JSON.parse(raw);
+          const assign = (node, value) => {
+            if (!node || typeof value !== "string") return;
+            const limit = node.maxLength > 0 ? node.maxLength : value.length;
+            node.value = value.slice(0, limit);
+          };
 
-            title.value = data.title || "";
-            topic.value = data.topic || "";
-            keywords.value = data.keywords || "";
-            abstractField.value = data.abstract || "";
-            author.value = data.author || "";
-            email.value = data.email || "";
-            institution.value = data.institution || "";
-            declaration.checked = Boolean(data.declaration);
+          assign(el.title, draft.title);
+          assign(el.keywords, draft.keywords);
+          assign(el.abstract, draft.abstract);
+          assign(el.author, draft.author);
+          assign(el.email, draft.email);
+          assign(el.institution, draft.institution);
 
-            if (data.savedAt) {
-              const date = new Date(data.savedAt);
-
-              if (!Number.isNaN(date.getTime())) {
-                lastSavedAt = date;
-                $("spDraftIndicator").textContent =
-                  "Saved draft restored from this browser";
-              }
-            }
-
-            updatePreview();
-          } catch (error) {
-            $("spDraftIndicator").textContent = "No saved draft available";
+          if (typeof draft.topic === "string") {
+            const hasOption = Array.from(el.topic.options).some(
+              (option) => option.value === draft.topic
+            );
+            if (hasOption) el.topic.value = draft.topic;
           }
+
+          el.declaration.checked = draft.declaration === true;
+
+          const when = formatSavedAt(draft.savedAt, true);
+          setDraftIndicator(when ? `Draft restored (saved ${when})` : "Draft restored");
+
+          showStatus("Your saved draft was restored. Please attach your PDF again.");
+        }
+
+        function resetForm() {
+          el.form.reset();
+          resetFileSelection();
+          markInvalid([]);
+          refreshView();
         }
 
         function clearDraft() {
-          const confirmed = window.confirm(
-            "Clear all form fields and remove the locally saved draft?",
-          );
+          if (
+            (hasAnyInput() || selectedFile) &&
+            !window.confirm(
+              "Clear the form and delete your saved draft? This cannot be undone."
+            )
+          ) {
+            return;
+          }
 
-          if (!confirmed) return;
-
-          form.reset();
-          removeFile();
+          let removed = true;
 
           try {
             localStorage.removeItem(DRAFT_KEY);
           } catch (error) {
-            // The form can still be cleared if storage is unavailable.
+            removed = false;
+            console.warn("Saved draft could not be removed.", error);
           }
 
-          lastSavedAt = null;
-          $("spDraftIndicator").textContent = "Draft not saved yet";
+          resetForm();
+          setDraftIndicator("Draft not saved yet");
 
-          form.querySelectorAll("[aria-invalid]").forEach((element) => {
-            element.removeAttribute("aria-invalid");
+          if (removed) {
+            showStatus("Form and saved draft cleared.", "success");
+          } else {
+            showStatus(
+              "The form was cleared, but the saved draft could not be removed from browser storage.",
+              "error"
+            );
+          }
+        }
+
+        // ==========================================
+        // REVIEW DIALOG
+        // ==========================================
+
+        function openDialog() {
+          if (typeof el.dialog.showModal === "function") {
+            if (!el.dialog.open) el.dialog.showModal();
+          } else {
+            el.dialog.setAttribute("open", "");
+          }
+        }
+
+        function closeDialog() {
+          if (typeof el.dialog.close === "function") {
+            if (el.dialog.open) el.dialog.close();
+          } else {
+            el.dialog.removeAttribute("open");
+          }
+        }
+
+        function addReviewRow(label, value, multiline) {
+          const row = document.createElement("div");
+          Object.assign(row.style, {
+            padding: "12px 14px",
+            border: "1px solid #35415b",
+            borderRadius: "12px",
+            background: "rgba(8, 15, 29, 0.62)"
           });
 
-          updatePreview();
-          showStatus("The form has been cleared.", "success");
+          const labelNode = document.createElement("div");
+          labelNode.textContent = label;
+          Object.assign(labelNode.style, {
+            color: "#7bdcf4",
+            fontSize: "10px",
+            fontWeight: "700",
+            letterSpacing: "1.3px",
+            textTransform: "uppercase"
+          });
+
+          const valueNode = document.createElement("div");
+          valueNode.style.marginTop = "5px";
+
+          if (value) {
+            valueNode.textContent = value;
+            if (multiline) valueNode.style.whiteSpace = "pre-wrap";
+          } else {
+            valueNode.textContent = "Not provided";
+            valueNode.style.color = "#71809d";
+          }
+
+          row.append(labelNode, valueNode);
+          el.reviewContent.appendChild(row);
         }
 
-        function addReviewRow(label, value) {
-          const row = document.createElement("div");
-          row.style.cssText =
-            "padding:12px;border:1px solid #303c56;border-radius:10px;background:#0b1425;";
-
-          const heading = document.createElement("strong");
-          heading.textContent = label;
-          heading.style.cssText =
-            "display:block;color:#7bdcf4;margin-bottom:5px;";
-
-          const content = document.createElement("div");
-          content.textContent = value || "Not provided";
-          content.style.cssText = "white-space:pre-wrap;color:#e1e7f6;";
-
-          row.append(heading, content);
-          $("spReviewContent").appendChild(row);
-        }
-
-        function openReview() {
-          if (!validateForm()) return;
-
+        function buildReview() {
           const data = getData();
-          const container = $("spReviewContent");
-          container.replaceChildren();
+
+          el.reviewContent.textContent = "";
 
           addReviewRow("Paper title", data.title);
           addReviewRow("Research topic", data.topic);
-          addReviewRow("Keywords", data.keywords);
-          addReviewRow("Abstract", data.abstract);
-          addReviewRow("Author", data.author);
+          addReviewRow("Keywords", parseKeywords(data.keywords).join(", "));
+          addReviewRow("Abstract", data.abstract, true);
+          addReviewRow("Author name", data.author);
           addReviewRow("Contact email", data.email);
-          addReviewRow("Institution", data.institution);
+          addReviewRow("Institution or affiliation", data.institution);
           addReviewRow(
-            "PDF document",
-            `${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)`,
+            "PDF file",
+            selectedFile
+              ? `${selectedFile.name} (${formatFileSize(selectedFile.size)})`
+              : ""
           );
-
-          if (typeof dialog.showModal === "function") {
-            dialog.showModal();
-          } else {
-            showStatus(
-              "Your form is valid. Review your details before backend integration.",
-              "success",
-            );
-          }
+          addReviewRow("Declaration", data.declaration ? "Confirmed" : "");
         }
 
-        title.addEventListener("input", updatePreview);
-        topic.addEventListener("change", updatePreview);
-        keywords.addEventListener("input", updatePreview);
-        abstractField.addEventListener("input", updatePreview);
-        author.addEventListener("input", updateProgress);
-        email.addEventListener("input", updateProgress);
-        declaration.addEventListener("change", updateProgress);
+        function openReview() {
+          if (isSubmitting) return;
 
-        fileInput.addEventListener("change", () => {
-          const file = fileInput.files && fileInput.files[0];
+          showStatus("");
 
-          if (!file) {
-            removeFile();
-            return;
-          }
+          const problems = validateForm();
+          markInvalid(problems);
 
-          const error = validPdf(file);
-
-          if (error) {
-            removeFile();
-            showStatus(error, "error");
-            return;
-          }
-
-          displayFile(file);
-          showStatus("PDF selected and checked locally.", "success");
-          updateProgress();
-        });
-
-        $("spRemoveFile").addEventListener("click", () => {
-          removeFile();
-          showStatus("PDF removed. Select another file when ready.");
-        });
-
-        const dropzone = $("spDropzone");
-
-        ["dragenter", "dragover"].forEach((type) => {
-          dropzone.addEventListener(type, (event) => {
-            event.preventDefault();
-            dropzone.classList.add("is-dragging");
-          });
-        });
-
-        ["dragleave", "drop"].forEach((type) => {
-          dropzone.addEventListener(type, (event) => {
-            event.preventDefault();
-            dropzone.classList.remove("is-dragging");
-          });
-        });
-
-        dropzone.addEventListener("drop", (event) => {
-          const file =
-            event.dataTransfer &&
-            event.dataTransfer.files &&
-            event.dataTransfer.files[0];
-
-          if (!file) return;
-
-          const error = validPdf(file);
-
-          if (error) {
-            showStatus(error, "error");
-            return;
-          }
-
-          try {
-            const transfer = new DataTransfer();
-            transfer.items.add(file);
-            fileInput.files = transfer.files;
-            displayFile(file);
-            showStatus("PDF selected and checked locally.", "success");
-            updateProgress();
-          } catch (error) {
+          if (problems.length > 0) {
             showStatus(
-              "Your browser could not attach the dropped file. Please use Browse files instead.",
-              "error",
+              problems.map((problem) => problem.message),
+              "error"
             );
-          }
-        });
-
-        $("spSaveButton").addEventListener("click", saveDraft);
-        $("spClearButton").addEventListener("click", clearDraft);
-
-        form.addEventListener("submit", (event) => {
-          event.preventDefault();
-          openReview();
-        });
-
-        $("spEditButton").addEventListener("click", () => {
-          dialog.close();
-        });
-
-        $("spFinishReview").addEventListener("click", async () => {
-          const button = $("spFinishReview");
-          const file = selectedFile;
-
-          if (!file) {
-            showStatus("Please select your research PDF.", "error");
+            focusFirstProblem(problems);
             return;
           }
 
-          const validationError = validPdf(file);
-          if (validationError) {
-            showStatus(validationError, "error");
-            return;
-          }
+          buildReview();
+          showDialogStatus("");
+          openDialog();
+        }
 
-          const data = getData();
-          const formData = new FormData();
+        // ==========================================
+        // SUBMISSION TO THE NODE.JS API
+        // ==========================================
 
-          formData.append("title", data.title);
-          formData.append(
-            "keywords",
-            [data.topic, data.keywords].filter(Boolean).join(", "),
-          );
-          formData.append("abstract", data.abstract);
-          formData.append("pdf", file);
-
-          button.disabled = true;
-          button.textContent = "Submitting...";
+        function resolveAuthorId() {
+          let raw = null;
 
           try {
-            const response = await fetch(
-              "http://127.0.0.1:8081/proe/api/papers/upload",
-              {
-                method: "POST",
-                credentials: "include",
-                body: formData,
-              },
-            );
+            raw = localStorage.getItem(AUTHOR_ID_STORAGE_KEY);
+          } catch (error) {
+            raw = null;
+          }
 
-            const result = await response.json();
+          const id = (raw || "").trim();
 
-            if (!response.ok) {
-              throw new Error(result.message || "Paper submission failed.");
+          if (
+            !id ||
+            id === "0" ||
+            id === "null" ||
+            id === "undefined" ||
+            !/^[A-Za-z0-9_-]{1,64}$/.test(id)
+          ) {
+            return "";
+          }
+
+          return id;
+        }
+
+        function setSubmitting(active) {
+          isSubmitting = active;
+          el.finishReview.disabled = active;
+          el.editButton.disabled = active;
+          el.finishReview.textContent = active ? SUBMITTING_LABEL : SUBMIT_LABEL;
+          el.finishReview.setAttribute("aria-busy", active ? "true" : "false");
+        }
+
+        async function sendPaper(authorId, file) {
+          const data = getData();
+
+          const keywordList = parseKeywords(data.keywords).filter(
+            (keyword) => keyword.toLowerCase() !== data.topic.toLowerCase()
+          );
+          const combinedKeywords = [data.topic, ...keywordList]
+            .filter(Boolean)
+            .join(", ");
+
+          // Do NOT set a Content-Type header: the browser must add the
+          // multipart boundary itself.
+          const formData = new FormData();
+          formData.append("author_id", authorId);
+          formData.append("title", data.title);
+          formData.append("abstract", data.abstract);
+          formData.append("keywords", combinedKeywords);
+          formData.append("file", file, file.name);
+
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+          let response;
+
+          try {
+            response = await fetch(API_URL, {
+              method: "POST",
+              body: formData,
+              signal: controller.signal
+            });
+          } catch (error) {
+            if (error && error.name === "AbortError") {
+              throw new Error(
+                "The upload timed out. Please check your connection and try again."
+              );
             }
 
-            dialog.close();
-            showStatus(
-              `Paper submitted successfully! Paper ID: ${result.paperId}`,
-              "success",
+            throw new Error(
+              `Could not reach the PROE server at ${API_ORIGIN}. Make sure the backend is running and allows requests from this page (CORS), then try again. Nothing was submitted.`
             );
+          } finally {
+            clearTimeout(timer);
+          }
+
+          const rawBody = await response.text();
+          let result = null;
+
+          try {
+            const parsed = rawBody ? JSON.parse(rawBody) : null;
+            result = parsed && typeof parsed === "object" ? parsed : null;
+          } catch (error) {
+            result = null;
+          }
+
+          const serverMessage =
+            result && (result.message || result.error)
+              ? String(result.message || result.error)
+              : "";
+
+          if (!response.ok) {
+            throw new Error(
+              serverMessage ||
+                `The server rejected the submission (HTTP ${response.status}).`
+            );
+          }
+
+          if (!result) {
+            throw new Error(
+              "The server sent a response that could not be read, so the submission could not be confirmed. Please check whether your paper was saved before trying again."
+            );
+          }
+
+          if (result.success === false) {
+            throw new Error(serverMessage || "Paper submission failed.");
+          }
+
+          return result;
+        }
+
+        async function submitPaper() {
+          if (isSubmitting) return;
+
+          const problems = validateForm();
+
+          if (problems.length > 0) {
+            closeDialog();
+            markInvalid(problems);
+            showStatus(
+              problems.map((problem) => problem.message),
+              "error"
+            );
+            focusFirstProblem(problems);
+            return;
+          }
+
+          const authorId = resolveAuthorId();
+
+          if (!authorId) {
+            showDialogStatus(
+              "Your author account could not be identified in this browser, so nothing was submitted. Please sign in to PROE and try again.",
+              "error"
+            );
+            return;
+          }
+
+          setSubmitting(true);
+          showDialogStatus("Uploading your paper. Please wait...");
+
+          try {
+            const file = selectedFile;
+            const pdfError = await validatePdf(file);
+
+            if (pdfError) {
+              closeDialog();
+              resetFileSelection();
+              showStatus(pdfError, "error");
+              return;
+            }
+
+            const result = await sendPaper(authorId, file);
+
+            const paperId =
+              result.paper_id !== undefined && result.paper_id !== null
+                ? String(result.paper_id)
+                : "";
 
             try {
               localStorage.removeItem(DRAFT_KEY);
             } catch (error) {
-              // Submission succeeded even if draft cleanup fails.
+              console.warn("Could not clear saved draft.", error);
             }
-          } catch (error) {
+
+            closeDialog();
+            showDialogStatus("");
+            resetForm();
+            setDraftIndicator("Draft not saved yet");
+
             showStatus(
-              error.message || "Unable to connect to the backend.",
-              "error",
+              paperId
+                ? `Paper submitted successfully! Paper ID: ${paperId}`
+                : "Paper submitted successfully!",
+              "success"
+            );
+
+            el.status.scrollIntoView({ block: "nearest" });
+          } catch (error) {
+            console.error("Paper submission error:", error);
+
+            showDialogStatus(
+              (error && error.message) || "Paper submission failed.",
+              "error"
             );
           } finally {
-            button.disabled = false;
-            button.textContent = "Finish review ✓";
+            setSubmitting(false);
           }
+        }
+
+        // ==========================================
+        // EVENT WIRING (each listener is attached exactly once)
+        // ==========================================
+
+        [
+          el.title,
+          el.topic,
+          el.keywords,
+          el.abstract,
+          el.author,
+          el.email,
+          el.institution
+        ].forEach((node) => {
+          if (!node) return;
+
+          const eventName = node.tagName === "SELECT" ? "change" : "input";
+
+          node.addEventListener(eventName, () => {
+            node.removeAttribute("aria-invalid");
+            refreshView();
+          });
         });
 
-        dialog.addEventListener("click", (event) => {
-          if (event.target === dialog) dialog.close();
+        el.declaration.addEventListener("change", updateProgress);
+
+        el.saveButton.addEventListener("click", saveDraft);
+        el.clearButton.addEventListener("click", clearDraft);
+
+        el.form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          openReview();
         });
+
+        el.editButton.addEventListener("click", closeDialog);
+        el.finishReview.addEventListener("click", submitPaper);
+
+        // Esc must not close the dialog while an upload is running.
+        el.dialog.addEventListener("cancel", (event) => {
+          if (isSubmitting) event.preventDefault();
+        });
+
+        // Close when the backdrop is clicked (unless uploading).
+        el.dialog.addEventListener("click", (event) => {
+          if (event.target === el.dialog && !isSubmitting) closeDialog();
+        });
+
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+
+        setText(el.year, String(new Date().getFullYear()));
 
         loadDraft();
-        updatePreview();
+
+        // Some browsers keep a file selection across soft reloads.
+        if (el.fileInput.files && el.fileInput.files[0]) {
+          handleFile(el.fileInput.files[0], { fromPicker: true, silent: true });
+        }
+
+        refreshView();
       })();
     </script>
   </body>
