@@ -36,4 +36,4 @@ Health check: http://127.0.0.1:3001/api/health
 The API never returns password hashes. Existing MySQL constraints/triggers remain authoritative. Note that deleting a user may be rejected when existing reviews reference them. Paper deletion follows your database's configured foreign-key behavior.
 
 ## Frontend integration
-Set frontend API base URL to `http://127.0.0.1:3001/api`. The React frontend still needs its fetch calls wired to these endpoints; browser code must never connect directly to MySQL.
+This API is optional: the web pages use the Java servlet app (`java-app`) for login, paper upload and the papers list. If you point a page at this API, set `CORS_ORIGIN` in `.env` to the exact origin serving the pages (for example `http://127.0.0.1:5500`); several origins can be comma-separated. Browser code must never connect directly to MySQL. This API has no authentication.

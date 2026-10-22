@@ -1261,7 +1261,14 @@
       const statPapers = document.getElementById("statPapers");
       const emptyState = document.getElementById("emptyState");
       const topicChips = [...document.querySelectorAll(".topic-chip")];
-      const cards = [...grid.querySelectorAll(".paper-card")];
+      let cards = [...grid.querySelectorAll(".paper-card")];
+
+      // Java servlet app (Tomcat, context /proe). GET /api/papers is public.
+      const API_ORIGIN = "http://127.0.0.1:8081";
+      const PAPERS_API = `${API_ORIGIN}/proe/api/papers`;
+
+      let usingLivePapers = false;
+      let liveNote = "";
       const mobileToggle = document.getElementById("mobileToggle");
       const navLinks = document.getElementById("navLinks");
 
@@ -1312,7 +1319,9 @@
         });
 
         const total = filtered.length;
-        count.textContent = `Showing ${total} of ${cards.length} sample papers`;
+        const noun = usingLivePapers ? "papers" : "sample papers";
+        count.textContent =
+          `Showing ${total} of ${cards.length} ${noun}${liveNote}`;
         statPapers.textContent = `${total} ${total === 1 ? "paper" : "papers"}`;
 
         emptyState.classList.toggle("show", total === 0);
@@ -1382,7 +1391,112 @@
         });
       });
 
+      // ---------- Live papers from the backend ----------
+
+      function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
+      function formatDate(value) {
+        const date = new Date(String(value || "").replace(" ", "T"));
+        return Number.isNaN(date.getTime())
+          ? ""
+          : date.toLocaleDateString([], { dateStyle: "medium" });
+      }
+
+      // Built with textContent only, so server data can never inject HTML.
+      function buildPaperCard(paper, index) {
+        // The submit form always puts the topic first in `keywords`.
+        const keywordList = String(paper.keywords || "")
+          .split(",")
+          .map(keyword => keyword.trim())
+          .filter(Boolean);
+        const category = keywordList[0] || "Other";
+        const title = String(paper.title || "Untitled paper");
+        const abstract = String(paper.abstract || "");
+
+        const card = el("article", "paper-card");
+        card.dataset.category = category;
+        card.dataset.title = title;
+        card.dataset.keywords = keywordList.join(" ").toLowerCase();
+
+        const top = el("div", "paper-card-top");
+        top.append(
+          el("span", "paper-category", category),
+          el("span", "paper-number", String(index + 1).padStart(2, "0"))
+        );
+
+        const description = el(
+          "p",
+          "paper-description",
+          abstract.length > 240 ? `${abstract.slice(0, 237)}...` : abstract
+        );
+
+        const tags = el("div", "paper-tags");
+        keywordList.slice(1, 4).forEach(keyword => {
+          tags.appendChild(el("span", "paper-tag", keyword));
+        });
+
+        const meta = el("div", "paper-meta");
+        const metaText = el("span", "paper-meta-text");
+        metaText.append(
+          el("strong", "", "Submitted paper"),
+          document.createTextNode(formatDate(paper.createdAt))
+        );
+        meta.append(el("span", "paper-meta-icon", "PDF"), metaText);
+
+        const link = el("a", "paper-link", "Read PDF ↗");
+        link.href = `${API_ORIGIN}${paper.paperUrl || ""}`;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.title = "You must be logged in to open the PDF";
+
+        const bottom = el("div", "paper-card-bottom");
+        bottom.append(meta, link);
+
+        card.append(top, el("h3", "", title), description, tags, bottom);
+        return card;
+      }
+
+      async function loadLivePapers() {
+        try {
+          const response = await fetch(PAPERS_API, {
+            headers: { Accept: "application/json" }
+          });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const papers = await response.json();
+
+          if (!Array.isArray(papers)) throw new Error("Unexpected response");
+
+          if (papers.length === 0) {
+            liveNote = " · no papers have been submitted yet";
+            filterAndSort();
+            return;
+          }
+
+          grid.textContent = "";
+          papers.forEach((paper, index) => {
+            grid.appendChild(buildPaperCard(paper, index));
+          });
+
+          cards = [...grid.querySelectorAll(".paper-card")];
+          usingLivePapers = true;
+          liveNote = "";
+          filterAndSort();
+        } catch (error) {
+          console.warn("Live papers unavailable:", error);
+          liveNote = " · live papers unavailable";
+          filterAndSort();
+        }
+      }
+
       filterAndSort();
+      loadLivePapers();
     })();
   </script>
 </body>

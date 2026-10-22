@@ -103,6 +103,12 @@ public class LoginServlet extends HttpServlet {
             getServletContext().log("Login failed.", e);
             sendError(response, 500,
                     "Unable to log in. Please try again.");
+        } catch (IllegalArgumentException e) {
+            // BCrypt.checkpw throws this when the stored hash is not a valid
+            // bcrypt hash (for example an account created by another service).
+            getServletContext().log(
+                    "Login rejected: stored password hash is not bcrypt.", e);
+            sendError(response, 401, "Invalid email or password.");
         }
     }
 

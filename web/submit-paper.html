@@ -1549,8 +1549,9 @@
             margin-top: 18px;
           "
         >
-          Only the title, abstract, keywords (including the topic), the PDF,
-          and your user ID are sent to the PROE server.
+          Only the title, abstract, keywords (including the topic) and the PDF
+          are sent to the PROE server. Your author account comes from your
+          login session.
         </p>
       </div>
     </dialog>
@@ -1564,13 +1565,12 @@
         // CONFIGURATION
         // ==========================================
 
-        const API_ORIGIN = "http://127.0.0.1:3001";
-        const API_URL = `${API_ORIGIN}/api/papers/upload`;
-
-        // The original page read the author ID from this localStorage key.
-        // It is the only user-ID mechanism visible in this file. If your
-        // login flow stores the ID elsewhere, change this one constant.
-        const AUTHOR_ID_STORAGE_KEY = "proe-user-id";
+        // Java servlet app (Tomcat, context /proe). It identifies the author
+        // from the login session cookie, so no author ID is sent from here.
+        const API_ORIGIN = "http://127.0.0.1:8081";
+        const API_URL = `${API_ORIGIN}/proe/api/papers/upload`;
+        const LOGIN_URL = "login.html";
+        const MAX_KEYWORDS_LENGTH = 255; // papers.keywords is VARCHAR(255)
 
         const DRAFT_KEY = "proe-submit-paper-draft";
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -1718,6 +1718,15 @@
               seen.add(key);
               return true;
             });
+        }
+
+        // Topic first, then the typed keywords (de-duplicated, trimmed).
+        function buildKeywords(data) {
+          const keywordList = parseKeywords(data.keywords).filter(
+            (keyword) => keyword.toLowerCase() !== data.topic.toLowerCase()
+          );
+
+          return [data.topic, ...keywordList].filter(Boolean).join(", ");
         }
 
         function getData() {
@@ -2106,6 +2115,15 @@
             problems.push({ field: el.abstract, message: "Enter your abstract." });
           }
 
+          const combinedKeywords = buildKeywords(data);
+
+          if (combinedKeywords.length > MAX_KEYWORDS_LENGTH) {
+            problems.push({
+              field: el.keywords,
+              message: `The topic and keywords together are ${combinedKeywords.length} characters long. The limit is ${MAX_KEYWORDS_LENGTH}; please shorten them.`
+            });
+          }
+
           if (!data.author) {
             problems.push({ field: el.author, message: "Enter the author name." });
           }
@@ -2198,6 +2216,29 @@
             return;
           }
 
+          const draft = writeDraft();
+
+          if (!draft) {
+            showStatus(
+              "Draft could not be saved because browser storage is unavailable or full.",
+              "error"
+            );
+            return;
+          }
+
+          setDraftIndicator(`Draft saved at ${formatSavedAt(draft.savedAt, false)}`);
+
+          showStatus(
+            selectedFile
+              ? "Draft saved on this device. Drafts do not include your PDF, so you will need to attach it again later."
+              : "Draft saved on this device.",
+            "success"
+          );
+        }
+
+        // Writes the text fields to localStorage. Returns the draft, or null
+        // when browser storage is unavailable.
+        function writeDraft() {
           const draft = {
             version: 1,
             title: el.title.value,
@@ -2215,21 +2256,10 @@
             localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
           } catch (error) {
             console.warn("Draft could not be saved.", error);
-            showStatus(
-              "Draft could not be saved because browser storage is unavailable or full.",
-              "error"
-            );
-            return;
+            return null;
           }
 
-          setDraftIndicator(`Draft saved at ${formatSavedAt(draft.savedAt, false)}`);
-
-          showStatus(
-            selectedFile
-              ? "Draft saved on this device. Drafts do not include your PDF, so you will need to attach it again later."
-              : "Draft saved on this device.",
-            "success"
-          );
+          return draft;
         }
 
         function loadDraft() {
@@ -2401,32 +2431,8 @@
         }
 
         // ==========================================
-        // SUBMISSION TO THE NODE.JS API
+        // SUBMISSION TO THE JAVA (TOMCAT) API
         // ==========================================
-
-        function resolveAuthorId() {
-          let raw = null;
-
-          try {
-            raw = localStorage.getItem(AUTHOR_ID_STORAGE_KEY);
-          } catch (error) {
-            raw = null;
-          }
-
-          const id = (raw || "").trim();
-
-          if (
-            !id ||
-            id === "0" ||
-            id === "null" ||
-            id === "undefined" ||
-            !/^[A-Za-z0-9_-]{1,64}$/.test(id)
-          ) {
-            return "";
-          }
-
-          return id;
-        }
 
         function setSubmitting(active) {
           isSubmitting = active;
@@ -2436,24 +2442,16 @@
           el.finishReview.setAttribute("aria-busy", active ? "true" : "false");
         }
 
-        async function sendPaper(authorId, file) {
+        async function sendPaper(file) {
           const data = getData();
 
-          const keywordList = parseKeywords(data.keywords).filter(
-            (keyword) => keyword.toLowerCase() !== data.topic.toLowerCase()
-          );
-          const combinedKeywords = [data.topic, ...keywordList]
-            .filter(Boolean)
-            .join(", ");
-
           // Do NOT set a Content-Type header: the browser must add the
-          // multipart boundary itself.
+          // multipart boundary itself. Field names match PaperUploadServlet.
           const formData = new FormData();
-          formData.append("author_id", authorId);
           formData.append("title", data.title);
           formData.append("abstract", data.abstract);
-          formData.append("keywords", combinedKeywords);
-          formData.append("file", file, file.name);
+          formData.append("keywords", buildKeywords(data));
+          formData.append("pdf", file, file.name);
 
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -2464,6 +2462,7 @@
             response = await fetch(API_URL, {
               method: "POST",
               body: formData,
+              credentials: "include", // sends the JSESSIONID login cookie
               signal: controller.signal
             });
           } catch (error) {
@@ -2474,7 +2473,7 @@
             }
 
             throw new Error(
-              `Could not reach the PROE server at ${API_ORIGIN}. Make sure the backend is running and allows requests from this page (CORS), then try again. Nothing was submitted.`
+              `Could not reach the PROE server at ${API_ORIGIN}. Make sure Tomcat is running on port 8081 and that you opened this page from http://127.0.0.1:5500, then try again. Nothing was submitted.`
             );
           } finally {
             clearTimeout(timer);
@@ -2494,6 +2493,14 @@
             result && (result.message || result.error)
               ? String(result.message || result.error)
               : "";
+
+          if (response.status === 401) {
+            const loginError = new Error(
+              serverMessage || "Please log in to submit a paper."
+            );
+            loginError.needsLogin = true;
+            throw loginError;
+          }
 
           if (!response.ok) {
             throw new Error(
@@ -2531,16 +2538,6 @@
             return;
           }
 
-          const authorId = resolveAuthorId();
-
-          if (!authorId) {
-            showDialogStatus(
-              "Your author account could not be identified in this browser, so nothing was submitted. Please sign in to PROE and try again.",
-              "error"
-            );
-            return;
-          }
-
           setSubmitting(true);
           showDialogStatus("Uploading your paper. Please wait...");
 
@@ -2555,11 +2552,11 @@
               return;
             }
 
-            const result = await sendPaper(authorId, file);
+            const result = await sendPaper(file);
 
             const paperId =
-              result.paper_id !== undefined && result.paper_id !== null
-                ? String(result.paper_id)
+              result.paperId !== undefined && result.paperId !== null
+                ? String(result.paperId)
                 : "";
 
             try {
@@ -2584,10 +2581,38 @@
           } catch (error) {
             console.error("Paper submission error:", error);
 
-            showDialogStatus(
-              (error && error.message) || "Paper submission failed.",
-              "error"
-            );
+            if (error && error.needsLogin) {
+              // Keep the typed text so nothing is lost while logging in.
+              const draft = writeDraft();
+
+              if (draft) {
+                setDraftIndicator(
+                  `Draft saved at ${formatSavedAt(draft.savedAt, false)}`
+                );
+              }
+
+              showDialogStatus(
+                draft
+                  ? `${error.message} Your draft was saved on this device.`
+                  : error.message,
+                "error"
+              );
+
+              const target = el.dialogStatus || el.status;
+              const link = document.createElement("a");
+              link.href = LOGIN_URL;
+              link.textContent = "Go to the login page";
+              link.style.display = "block";
+              link.style.marginTop = "8px";
+              link.style.color = "inherit";
+              link.style.textDecoration = "underline";
+              target.appendChild(link);
+            } else {
+              showDialogStatus(
+                (error && error.message) || "Paper submission failed.",
+                "error"
+              );
+            }
           } finally {
             setSubmitting(false);
           }

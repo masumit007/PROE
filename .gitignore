@@ -35,3 +35,8 @@ replay_pid*.log
 # Uploaded research PDFs
 /uploads/*
 !/uploads/.gitkeep
+
+# Express API uploads and Vite cache
+mysql-api/uploads/*
+!mysql-api/uploads/.gitkeep
+.vite/

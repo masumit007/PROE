@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proe.config.UploadConfig;
 
 @WebServlet("/api/papers/upload")
 @MultipartConfig(
@@ -35,8 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 )
 public class PaperUploadServlet extends HttpServlet {
 
-    private static final Path UPLOAD_DIR =
-            Paths.get("D:\\PROE\\uploads").toAbsolutePath().normalize();
+    private static final Path UPLOAD_DIR = UploadConfig.UPLOAD_DIR;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
