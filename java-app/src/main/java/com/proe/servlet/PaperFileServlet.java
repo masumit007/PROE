@@ -10,14 +10,13 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.proe.config.UploadConfig;
 import java.util.UUID;
 
 @WebServlet("/api/papers/files/*")
 public class PaperFileServlet extends HttpServlet {
 
-    private static final Path UPLOAD_DIR =
-            Paths.get("D:\\PROE\\uploads").toAbsolutePath().normalize();
+    private static final Path UPLOAD_DIR = UploadConfig.UPLOAD_DIR;
 
     @Override
     protected void doGet(HttpServletRequest request,
