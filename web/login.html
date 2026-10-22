@@ -1086,7 +1086,7 @@
           the API contract with your backend teammate.
 
           Example:
-          const LOGIN_API = "http://localhost:8080/api/auth/login";
+          const LOGIN_API = "http://127.0.0.1:8081/proe/api/auth/login";
 
           The JSON request below is an example only. Adjust it to
           match the real backend request and response format.
@@ -1137,6 +1137,12 @@
               !result.redirectUrl.startsWith("//")
             ) {
               window.location.assign(result.redirectUrl);
+            } else {
+              // The Java LoginServlet returns no redirectUrl; the session
+              // cookie is now set, so continue to the submission page.
+              setTimeout(() => {
+                window.location.assign("submit-paper.html");
+              }, 800);
             }
           } catch (error) {
             showMessage(
